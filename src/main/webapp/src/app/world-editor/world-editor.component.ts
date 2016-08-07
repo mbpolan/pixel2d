@@ -1,12 +1,11 @@
-import {Component} from '@angular/core'
-import {NGB_TABSET_DIRECTIVES} from '@ng-bootstrap/ng-bootstrap';
+import {Component, AfterViewInit, ViewChild} from "@angular/core";
+import {NGB_TABSET_DIRECTIVES} from "@ng-bootstrap/ng-bootstrap";
 import {MapCanvasComponent} from "./map-canvas/map-canvas.component";
-import {AfterViewInit} from "@angular/core";
-import {ViewChild} from "@angular/core";
+import {TAB_DIRECTIVES} from "ng2-bootstrap";
 
 @Component({
   selector: 'world-editor',
-  directives: [NGB_TABSET_DIRECTIVES, MapCanvasComponent],
+  directives: [TAB_DIRECTIVES, MapCanvasComponent],
   styleUrls: ['./world-editor.style.css'],
   templateUrl: './world-editor.template.html'
 })
