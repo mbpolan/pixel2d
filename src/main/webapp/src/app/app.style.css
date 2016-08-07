@@ -3,12 +3,22 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 56px;
+    height: 55px;
+}
+
+.toolbar {
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  position: fixed;
+  top: 55px;
+  height: 35px;
+  left: 0;
+  right: 0;
 }
 
 .content {
   position: fixed;
-  top: 56px;
+  top: 90px;
   left: 0;
   right: 0;
   bottom: 0;

@@ -4,13 +4,11 @@
 }
 
 .sidebar {
-  border: 1px solid #000000;
+  border-right: 1px solid #ddd;
   flex: 1 0 0;
 }
 
 .map-view {
-  border: 1px solid #000000;
-  border-left: none;
   flex: 9 0 0;
   overflow: scroll;
 }

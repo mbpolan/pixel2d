@@ -12,16 +12,23 @@ declare var PIXI: any;
   selector: 'map-canvas',
   templateUrl: './map-canvas.template.html'
 })
-export class MapCanvasComponent implements OnInit {
+export class MapCanvasComponent {
 
   @ViewChild('root') root: ElementRef;
   renderer: any;
-  stage: any = new PIXI.Container();
+  stage: any;
 
-  ngOnInit() {
+  initialize(width: number, height: number) {
     // create a new renderer and append it to the component view
-    this.renderer = PIXI.autoDetectRenderer();
-    this.root.nativeElement.appendChild(this.renderer.view);
-    this.renderer.render(this.stage);
+    if (!this.renderer) {
+      this.renderer = PIXI.autoDetectRenderer(width, height);
+      this.root.nativeElement.appendChild(this.renderer.view);
+      this.renderer.render(this.stage);
+    }
+
+    else {
+      this.renderer.resize(width, height);
+      this.stage.removeChildren();
+    }
   }
 }

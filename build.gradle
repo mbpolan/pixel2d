@@ -22,7 +22,7 @@ node {
 }
 
 jar.into('static') {
-    from('src/main/webapp')
+    from('src/main/webapp/dist')
     exclude '**/node_modules/**'
 }
 
@@ -52,7 +52,7 @@ task npmInstallLocal(type: NpmTask) {
     args = ['install']
 }
 
-build.dependsOn npmInstallLocal
+//build.dependsOn npmInstallLocal
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.9'
