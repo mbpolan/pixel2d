@@ -2,7 +2,7 @@ import {Component, ViewChild} from "@angular/core";
 import {BS_VIEW_PROVIDERS, MODAL_DIRECTIVES, ModalDirective} from "ng2-bootstrap";
 import {Output} from "@angular/core";
 import {EventEmitter} from "@angular/core";
-import {MapDetails} from "./map-details";
+import {MapDetails} from "../map-details";
 
 @Component({
   selector: 'new-dialog',
