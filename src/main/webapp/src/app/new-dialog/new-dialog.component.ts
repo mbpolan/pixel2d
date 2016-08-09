@@ -15,8 +15,8 @@ export class NewDialogComponent {
   @ViewChild(ModalDirective)
   private modal: ModalDirective;
 
-  private mapWidth: number = 1000;
-  private mapHeight: number = 1000;
+  private mapWidth: number = 10;
+  private mapHeight: number = 10;
 
   @Output()
   public onConfirmed = new EventEmitter<MapDetails>();

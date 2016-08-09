@@ -10,5 +10,5 @@
 
 .map-view {
   flex: 9 0 0;
-  overflow: scroll;
+  overflow: hidden;
 }
