@@ -8,6 +8,7 @@ const TILE_SIZE = 32;
 
 @Component({
   selector: 'map-canvas',
+  styleUrls: ['./map-canvas.style.css'],
   templateUrl: './map-canvas.template.html'
 })
 export class MapCanvasComponent {
