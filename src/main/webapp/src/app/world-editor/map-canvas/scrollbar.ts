@@ -60,6 +60,7 @@ export class ScrollBar {
       this.bar.x = pWidth - SCROLL_SIZE;
       this.bar.y = 0;
 
+      // compute the height of the thumb to be some percentage of the total height of scrollable area
       let th = vHeight <= pHeight ? pHeight : (pHeight / vHeight) * pHeight;
       this.thumb.drawRect(0, 0, SCROLL_SIZE, th);
       this.thumb.hitArea = new PIXI.Rectangle(0, 0, SCROLL_SIZE, th);
@@ -72,6 +73,7 @@ export class ScrollBar {
       this.bar.x = 0;
       this.bar.y = pHeight - SCROLL_SIZE;
 
+      // compute the width of the thumb to be some percentage of the total width of scrollable area
       let tw = vWidth <= pWidth ? pWidth : (pWidth / vWidth) * pWidth;
       this.thumb.drawRect(0, 0, tw, SCROLL_SIZE);
       this.thumb.hitArea = new PIXI.Rectangle(0, 0, tw, SCROLL_SIZE);
@@ -117,30 +119,64 @@ export class ScrollBar {
         // compute the difference between our last grab position and hte cursor now along the y axis
         let delta = pos.y - this.grab.y;
 
-        // only move the scrollbar if this delta will keep it within its parent's span
-        if ((delta < 0 && this.thumb.y + delta >= 0) ||
-          (delta > 0 && this.thumb.y + this.thumb.height + delta <= this.max)) {
-
-          // move the scrollbar and update the last grab position
-          this.thumb.y += delta;
-          this.grab = pos;
-
-          this.scrollAction.next(this.thumb.y / this.max);
+        // clamp the scrollbar to the top of the parent container
+        if (delta < 0 && this.thumb.y + delta < 0) {
+          delta = -this.thumb.y;
         }
+
+        // clamp the scrollbar to the bottom of the parent container
+        else if (delta > 0 && this.thumb.y + this.thumb.height + delta > this.max) {
+          delta = this.max - this.thumb.y - this.thumb.height;
+        }
+
+        this.updateY(pos, delta);
       }
 
       else {
         let delta = pos.x - this.grab.x;
 
-        // ditto for the x axis thumb
-        if ((delta < 0 && this.thumb.x + delta >= 0) ||
-          (delta > 0 && this.thumb.x + this.thumb.width + delta <= this.max)) {
-          this.thumb.x += delta;
-          this.grab = pos;
-
-          this.scrollAction.next(this.thumb.x / this.max);
+        // clamp the scrollbar to the left of the parent container
+        if (delta < 0 && this.thumb.x + delta < 0) {
+          delta = -this.thumb.x;
         }
+
+        // clamp the scrollbar to the right of the parent container
+        if (delta > 0 && this.thumb.x + this.thumb.width + delta > this.max) {
+          delta = this.max - this.thumb.x - this.thumb.width;
+        }
+
+        this.updateX(pos, delta);
       }
+    }
+  }
+
+  /**
+   * Updates the position of the thumb by some vertical delta.
+   *
+   * @param pos The new mouse position.
+   * @param delta The delta to move the thumb by.
+   */
+  private updateY(pos: PIXI.Point, delta: number): void {
+    if (delta !== 0) {
+      this.thumb.y += delta;
+      this.grab = pos;
+
+      this.scrollAction.next(this.thumb.y / this.max);
+    }
+  }
+
+  /**
+   * Updates the position of the thumb by some horizontal delta.
+   *
+   * @param pos The new position of the mouse.
+   * @param delta The delta to move the thumb by.
+   */
+  private updateX(pos: PIXI.Point, delta: number): void {
+    if (delta !== 0) {
+      this.thumb.x += delta;
+      this.grab = pos;
+
+      this.scrollAction.next(this.thumb.x / this.max);
     }
   }
 }
