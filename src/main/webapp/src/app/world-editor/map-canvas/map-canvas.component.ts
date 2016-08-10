@@ -1,5 +1,7 @@
 import {OnInit, TemplateRef, ViewContainerRef, ViewChild, ElementRef, Component} from "@angular/core";
 import {ScrollBar, SCROLL_SIZE} from "./scrollbar";
+import {Subject} from "rxjs";
+import {Cursor} from "../cursor";
 
 // the size of a single tile in pixels
 const TILE_SIZE = 32;
@@ -28,6 +30,10 @@ export class MapCanvasComponent {
 
   private tilesWide: number;
   private tilesHigh: number;
+
+  private cursorPos: Cursor;
+  private cursorAction = new Subject<Cursor>();
+  public cursorUpdated$ = this.cursorAction.asObservable();
 
   /**
    * Creates a new canvas of the given size.
@@ -71,6 +77,7 @@ export class MapCanvasComponent {
 
       // create a new tile cursor
       this.cursor = this.createCursor();
+      this.cursorPos = new Cursor(1, 1);
 
       // set the stage to be interactive and track mouse movements
       this.canvas.interactive = true;
@@ -173,6 +180,13 @@ export class MapCanvasComponent {
 
       this.cursor.x = tileX * TILE_SIZE;
       this.cursor.y = tileY * TILE_SIZE;
+
+      // update the cursor location if it has changed
+      if (tileX + 1 !== this.cursorPos.x || tileY + 1 !== this.cursorPos.y) {
+        this.cursorPos.x = tileX + 1;
+        this.cursorPos.y = tileY + 1;
+        this.cursorAction.next(this.cursorPos);
+      }
     }
 
   }

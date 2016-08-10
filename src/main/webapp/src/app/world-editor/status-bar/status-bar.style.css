@@ -1,0 +1,9 @@
+.status-bar-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cursor-box {
+  border-left: 1px solid #ddd;
+  padding-left: 10px;
+}

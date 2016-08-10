@@ -1,6 +1,6 @@
 .world-editor-container {
   display: flex;
-  height: 100%;
+  height: calc(100% - 25px);
 }
 
 .sidebar {
@@ -11,4 +11,13 @@
 .map-view {
   flex: 9 0 0;
   overflow: hidden;
+}
+
+.status-bar {
+  border-top: 1px solid #ddd;
+  position: absolute;
+  height: 25px;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
