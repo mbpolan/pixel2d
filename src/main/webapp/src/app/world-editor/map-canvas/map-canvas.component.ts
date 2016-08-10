@@ -17,20 +17,27 @@ export class MapCanvasComponent {
   private root: ElementRef;
 
   private renderer: any;
-  private stage: any;
+  private stage: PIXI.Container;
 
+  // scrollbars across the canvas
   private scrollX: ScrollBar;
   private scrollY: ScrollBar;
+  private scrollBorder: PIXI.Container;
 
+  // the actual map canvas and its pixel dimensions
   private canvas: PIXI.Container;
   private canvasWidth: number;
   private canvasHeight: number;
-  private gridLines: any;
-  private cursor: any;
 
+  // extra elements and overlays on the canvas
+  private gridLines: PIXI.Container;
+  private cursor: PIXI.Container;
+
+  // size of the map in tiles
   private tilesWide: number;
   private tilesHigh: number;
 
+  // location of map cursor and observable for notifications
   private cursorPos: Cursor;
   private cursorAction = new Subject<Cursor>();
   public cursorUpdated$ = this.cursorAction.asObservable();
@@ -67,6 +74,12 @@ export class MapCanvasComponent {
       this.scrollY.reshape(this.renderer.width, this.renderer.height - SCROLL_SIZE, this.canvasWidth, this.canvasHeight);
       this.scrollX = new ScrollBar(false, this.stage);
       this.scrollX.reshape(this.renderer.width - SCROLL_SIZE, this.renderer.height, this.canvasWidth, this.canvasHeight);
+
+      // create a border to fill in gaps left by the scrollbars
+      this.scrollBorder = this.createScrollBorder();
+      this.scrollBorder.x = this.renderer.width - SCROLL_SIZE;
+      this.scrollBorder.y = this.renderer.height - SCROLL_SIZE;
+      this.stage.addChild(this.scrollBorder);
 
       // and ask to be notified of any changes to the scroll positions
       this.scrollY.scrolled$.subscribe((pct) => this.onScroll(pct, true));
@@ -110,6 +123,19 @@ export class MapCanvasComponent {
     else {
       this.canvas.x = -(this.canvasWidth * pct);
     }
+  }
+
+  /**
+   * Creates an element for containing the scroll border around the canvas.
+   *
+   * @returns {PIXI.Graphics} A shape for the border.
+   */
+  private createScrollBorder(): PIXI.Graphics {
+    let g = new PIXI.Graphics();
+    g.beginFill(0xEFEFEF);
+    g.drawRect(0, 0, SCROLL_SIZE, SCROLL_SIZE);
+
+    return g;
   }
 
   /**
