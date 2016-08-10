@@ -1,7 +1,5 @@
 import {OnInit, TemplateRef, ViewContainerRef, ViewChild, ElementRef, Component} from "@angular/core";
-
-// declare the PIXI.js library
-declare var PIXI: any;
+import {ScrollBar, SCROLL_SIZE} from "./scrollbar";
 
 // the size of a single tile in pixels
 const TILE_SIZE = 32;
@@ -18,8 +16,16 @@ export class MapCanvasComponent {
 
   private renderer: any;
   private stage: any;
+
+  private scrollX: ScrollBar;
+  private scrollY: ScrollBar;
+
+  private canvas: PIXI.Container;
+  private canvasWidth: number;
+  private canvasHeight: number;
   private gridLines: any;
   private cursor: any;
+
   private tilesWide: number;
   private tilesHigh: number;
 
@@ -41,10 +47,26 @@ export class MapCanvasComponent {
       this.renderer = PIXI.autoDetectRenderer(rect.width, rect.height);
       this.root.nativeElement.appendChild(this.renderer.view);
 
-      // create a new stage and size it to contain the amount of tiles
       this.stage = new PIXI.Container();
-      this.stage.width = width * TILE_SIZE;
-      this.stage.height = height * TILE_SIZE;
+
+      // create a new stage and size it to contain the amount of tiles
+      this.canvas = new PIXI.Container();
+      this.canvasWidth = width * TILE_SIZE;
+      this.canvasHeight = height * TILE_SIZE;
+      this.canvas.width = rect.width - SCROLL_SIZE;
+      this.canvas.height = rect.height - SCROLL_SIZE;
+
+      this.stage.addChild(this.canvas);
+
+      // create a set of scrollbars across the x and y axis
+      this.scrollY = new ScrollBar(true, this.stage);
+      this.scrollY.reshape(this.renderer.width, this.renderer.height - SCROLL_SIZE, this.canvasWidth, this.canvasHeight);
+      this.scrollX = new ScrollBar(false, this.stage);
+      this.scrollX.reshape(this.renderer.width - SCROLL_SIZE, this.renderer.height, this.canvasWidth, this.canvasHeight);
+
+      // and ask to be notified of any changes to the scroll positions
+      this.scrollY.scrolled$.subscribe((pct) => this.onScroll(pct, true));
+      this.scrollX.scrolled$.subscribe((pct) => this.onScroll(pct, false));
 
       // create grid lines for the map
       this.gridLines = this.createGridLines();
@@ -53,20 +75,36 @@ export class MapCanvasComponent {
       this.cursor = this.createCursor();
 
       // set the stage to be interactive and track mouse movements
-      this.stage.interactive = true;
-      this.stage.on('mousemove', (e) => this.onMouseMove(e));
+      this.canvas.interactive = true;
+      this.canvas.on('mousemove', (e) => this.onMouseMove(e));
 
       this.renderLoop();
     }
 
     else {
       // FIXME: handle resizing
-      this.stage.removeChildren();
+      this.canvas.removeChildren();
     }
 
     // always add the cursor to the stage
-    this.stage.addChild(this.gridLines);
-    this.stage.addChild(this.cursor);
+    this.canvas.addChild(this.gridLines);
+    this.canvas.addChild(this.cursor);
+  }
+
+  /**
+   * Handler invoked when a scrollbar has been moved.
+   *
+   * @param pct The percentage of the total view that was scrolled.
+   * @param vertical true if this is the vertical scrollbar, false for horizontal.
+   */
+  private onScroll(pct: number, vertical: boolean): void {
+    if (vertical) {
+      this.canvas.y = -((this.canvasHeight - this.renderer.height) * pct);
+    }
+
+    else {
+      this.canvas.x = -((this.canvasWidth - this.renderer.width) * pct);
+    }
   }
 
   /**
@@ -125,8 +163,9 @@ export class MapCanvasComponent {
    */
   private onMouseMove(e: any): void {
     if (this.cursor) {
-      let tileX = Math.floor(e.data.global.x / TILE_SIZE);
-      let tileY = Math.floor(e.data.global.y / TILE_SIZE);
+      // factor in the scroll offset when computing what tile we are hovering over
+      let tileX = Math.floor((Math.abs(this.canvas.x) + e.data.global.x) / TILE_SIZE);
+      let tileY = Math.floor((Math.abs(this.canvas.y) + e.data.global.y) / TILE_SIZE);
 
       // hide the cursor if it goes off-screen
       if (tileX >= this.tilesWide || tileY >= this.tilesHigh) {
