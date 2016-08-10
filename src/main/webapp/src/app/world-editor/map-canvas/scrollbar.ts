@@ -1,5 +1,6 @@
 import {Subject} from "rxjs";
 
+// FIXME: externalize scrollbar size
 export const SCROLL_SIZE = 15;
 
 /**
@@ -52,6 +53,11 @@ export class ScrollBar {
    * @returns {ScrollBar} This instance.
    */
   public reshape(pWidth: number, pHeight: number, vWidth: number, vHeight: number): ScrollBar {
+    // clear the shapes and draw them completely from scratch
+    this.bar.clear();
+    this.thumb.clear();
+
+    // FIXME: externalize these colors
     this.bar.beginFill(0xEFEFEF);
     this.thumb.beginFill(0x777777);
 

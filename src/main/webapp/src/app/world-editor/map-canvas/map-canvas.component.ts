@@ -2,6 +2,10 @@ import {OnInit, TemplateRef, ViewContainerRef, ViewChild, ElementRef, Component}
 import {ScrollBar, SCROLL_SIZE} from "./scrollbar";
 import {Subject} from "rxjs";
 import {Cursor} from "../cursor";
+import {OnDestroy} from "@angular/core";
+import {Observable} from "rxjs";
+import {TimerObservable} from "rxjs/observable/TimerObservable";
+import {Subscription} from "rxjs";
 
 // the size of a single tile in pixels
 const TILE_SIZE = 32;
@@ -16,6 +20,7 @@ export class MapCanvasComponent {
   @ViewChild('root')
   private root: ElementRef;
 
+  private pendingResize: Subscription;
   private renderer: any;
   private stage: PIXI.Container;
 
@@ -71,14 +76,10 @@ export class MapCanvasComponent {
 
       // create a set of scrollbars across the x and y axis
       this.scrollY = new ScrollBar(true, this.stage);
-      this.scrollY.reshape(this.renderer.width, this.renderer.height - SCROLL_SIZE, this.canvasWidth, this.canvasHeight);
       this.scrollX = new ScrollBar(false, this.stage);
-      this.scrollX.reshape(this.renderer.width - SCROLL_SIZE, this.renderer.height, this.canvasWidth, this.canvasHeight);
 
       // create a border to fill in gaps left by the scrollbars
       this.scrollBorder = this.createScrollBorder();
-      this.scrollBorder.x = this.renderer.width - SCROLL_SIZE;
-      this.scrollBorder.y = this.renderer.height - SCROLL_SIZE;
       this.stage.addChild(this.scrollBorder);
 
       // and ask to be notified of any changes to the scroll positions
@@ -107,6 +108,9 @@ export class MapCanvasComponent {
     // always add the cursor to the stage
     this.canvas.addChild(this.gridLines);
     this.canvas.addChild(this.cursor);
+
+    // refresh all editor features at this point
+    this.updateEditor();
   }
 
   /**
@@ -123,6 +127,49 @@ export class MapCanvasComponent {
     else {
       this.canvas.x = -(this.canvasWidth * pct);
     }
+  }
+
+  /**
+   * Handler invoked when a resize event was received.
+   *
+   * @param e The event.
+   */
+  private onResize(e: Event): void {
+    if (this.renderer) {
+      // if there is already a resize pending, unsubscribe from it now
+      if (this.pendingResize) {
+        this.pendingResize.unsubscribe();
+        this.pendingResize = null;
+      }
+
+      // schedule another resize to happen in some short time
+      this.pendingResize = Observable.timer(500).subscribe(() => {
+        // resize the renderer itself and editor elements
+        this.updateRenderer();
+        this.updateEditor();
+      });
+    }
+  }
+
+  /**
+   * Updates the underlying renderer to match the current component size.
+   */
+  private updateRenderer(): void {
+    var rect = this.root.nativeElement.getBoundingClientRect();
+    this.renderer.resize(rect.width, rect.height);
+  }
+
+  /**
+   * Updates various elements on the editor that are dependent on the renderer.
+   */
+  private updateEditor(): void {
+    // update the position of static elements
+    this.scrollBorder.x = this.renderer.width - SCROLL_SIZE;
+    this.scrollBorder.y = this.renderer.height - SCROLL_SIZE;
+
+    // redraw scrollbars
+    this.scrollY.reshape(this.renderer.width, this.renderer.height - SCROLL_SIZE, this.canvasWidth, this.canvasHeight);
+    this.scrollX.reshape(this.renderer.width - SCROLL_SIZE, this.renderer.height, this.canvasWidth, this.canvasHeight);
   }
 
   /**
