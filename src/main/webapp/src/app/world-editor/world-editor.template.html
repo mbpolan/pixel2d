@@ -2,7 +2,15 @@
   <div class="sidebar">
     <tabset>
       <tab heading="Tiles">
-        Some content
+        <div *ngFor="let tile of tileset" class="tile-entry-container"
+             (click)="onTileSelected(tile)"
+             [class.tile-active]="selectedTile === tile">
+          <div class="tile-entry-image"
+               [ngStyle]="{
+                 'background-image': 'url(/assets/' + tilesetImage + ')',
+                 'background-position': '-' + tile.x + 'px -' + tile.y + 'px'}"></div>
+          <span class="tile-entry-name">{{tile.name}}</span>
+        </div>
       </tab>
     </tabset>
   </div>

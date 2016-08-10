@@ -21,3 +21,30 @@
   left: 0;
   right: 0;
 }
+
+.tile-entry-container {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  padding: 5px;
+}
+
+.tile-active {
+  background-color: #f5f5f5;
+}
+
+.tile-entry-container:hover {
+  background-color: #f5f5f5;
+}
+
+.tile-entry-image {
+  width: 32px;
+  height: 32px;
+  background-repeat: no-repeat;
+}
+
+.tile-entry-name {
+  flex-grow: 1;
+  text-align: right;
+  padding-right: 10px;
+}
