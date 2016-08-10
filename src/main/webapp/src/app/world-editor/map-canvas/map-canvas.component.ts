@@ -53,8 +53,6 @@ export class MapCanvasComponent {
       this.canvas = new PIXI.Container();
       this.canvasWidth = width * TILE_SIZE;
       this.canvasHeight = height * TILE_SIZE;
-      this.canvas.width = rect.width - SCROLL_SIZE;
-      this.canvas.height = rect.height - SCROLL_SIZE;
 
       this.stage.addChild(this.canvas);
 
@@ -99,11 +97,11 @@ export class MapCanvasComponent {
    */
   private onScroll(pct: number, vertical: boolean): void {
     if (vertical) {
-      this.canvas.y = -((this.canvasHeight - this.renderer.height) * pct);
+      this.canvas.y = -(this.canvasHeight * pct);
     }
 
     else {
-      this.canvas.x = -((this.canvasWidth - this.renderer.width) * pct);
+      this.canvas.x = -(this.canvasWidth * pct);
     }
   }
 
