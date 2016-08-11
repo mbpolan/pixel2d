@@ -6,7 +6,8 @@ import {WorldActions} from "./world-actions.service";
 import {MapDetails} from "../map-details";
 import {StatusBarComponent} from "./status-bar/status-bar.component";
 import {Cursor} from "./cursor";
-import {TilesetService, Tileset, Tile} from "./tileset.service";
+import {TilesetService} from "./tileset.service";
+import {Tile, Tileset} from "./tileset";
 
 @Component({
   selector: 'world-editor',
@@ -44,7 +45,7 @@ export class WorldEditorComponent implements AfterViewInit {
       let head = tilesets[0];
 
       this.tilesetImage = head.image;
-      this.tileset = head.tiles[0].textures;
+      this.tileset = head.assets.tiles.textures;
     })
   }
 

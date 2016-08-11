@@ -1,6 +1,6 @@
-import {Injectable} from '@angular/core'
+import {Injectable} from "@angular/core";
 import {Http} from "@angular/http";
-import {Tileset, TileAsset} from "./tileset";
+import {Tileset, Assets} from "./tileset";
 
 @Injectable()
 export class TilesetService {
@@ -17,7 +17,7 @@ export class TilesetService {
    */
   public getTilesets(): Promise<Tileset[]> {
     return this.http.get('/assets/mock/' + this.file + '.json').toPromise().then(response => {
-      return [new Tileset(this.file + '.png', response.json() as TileAsset[])];
+      return [new Tileset(this.file + '.png', response.json() as Assets)];
     });
   }
 }
