@@ -8,6 +8,10 @@
   flex: 1 0 0;
 }
 
+.tileset-dropdown {
+  margin-bottom: 5px;
+}
+
 .map-view {
   flex: 9 0 0;
   overflow: hidden;
@@ -38,8 +42,6 @@
 }
 
 .tile-entry-image {
-  width: 32px;
-  height: 32px;
   background-repeat: no-repeat;
 }
 

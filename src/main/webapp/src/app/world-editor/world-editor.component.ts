@@ -24,8 +24,8 @@ export class WorldEditorComponent implements AfterViewInit {
   @ViewChild(StatusBarComponent)
   private statusBar: StatusBarComponent;
 
-  private tilesetImage: string;
-  private tileset: Tile[];
+  private tilesets: Tileset[];
+  private selectedTileset: Tileset;
   private selectedTile: Tile;
 
   public constructor(private tilesetService: TilesetService, private worldActions: WorldActions) {
@@ -41,12 +41,22 @@ export class WorldEditorComponent implements AfterViewInit {
 
     // request tilesets that we can show the user
     this.tilesetService.getTilesets().then((tilesets: Tileset[]) => {
-      // TODO: more than one tileset
-      let head = tilesets[0];
+      this.tilesets = tilesets;
 
-      this.tilesetImage = head.image;
-      this.tileset = head.assets.tiles.textures;
+      // show the first tileset
+      if (this.tilesets.length > 0) {
+        this.onTilesetChanged(this.tilesets[0].assets.name);
+      }
     })
+  }
+
+  /**
+   * Handler invoked when the current tileset is changed.
+   *
+   * @param name The name of the newly selected tileset.
+   */
+  private onTilesetChanged(name: any): void {
+    this.selectedTileset = this.tilesets.find((t) => t.assets.name === name);
   }
 
   /**

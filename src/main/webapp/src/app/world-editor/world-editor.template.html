@@ -1,21 +1,43 @@
 <div class="world-editor-container">
   <div class="sidebar">
-    <tabset>
+
+    <!-- dropdown for selecting the current tileset -->
+    <select class="form-control tileset-dropdown"
+            (change)="onTilesetChanged($event.target.value)">
+
+      <option *ngFor="#tileset of tilesets; #i=index"
+              value="{{tileset.assets.name}}"
+              [selected]="i === 0 ? true : null">{{tileset.assets.name}}</option>
+    </select>
+
+    <!-- tabs for showing tileset assets -->
+    <tabset *ngIf="selectedTileset">
       <tab heading="Tiles">
-        <div *ngFor="let tile of tileset" class="tile-entry-container"
+        <div *ngFor="let tile of selectedTileset.assets.tiles.textures" class="tile-entry-container"
              (click)="onTileSelected(tile)"
              [class.tile-active]="selectedTile === tile">
+
+          <!-- preview image of the tile -->
           <div class="tile-entry-image"
                [ngStyle]="{
-                 'background-image': 'url(/assets/' + tilesetImage + ')',
-                 'background-position': '-' + tile.x + 'px -' + tile.y + 'px'}"></div>
+                 'background-image': 'url(/assets/' + selectedTileset.image + ')',
+                 'background-position': '-' + tile.x + 'px -' + tile.y + 'px',
+                 'width': selectedTileset.assets.tiles.w + 'px',
+                 'height': selectedTileset.assets.tiles.h + 'px'}"></div>
+
+          <!-- name of the tile -->
           <span class="tile-entry-name">{{tile.name}}</span>
         </div>
       </tab>
     </tabset>
   </div>
+
+  <!-- canvas for editing the map -->
   <div class="map-view">
     <map-canvas></map-canvas>
   </div>
+
 </div>
+
+<!-- status bar with general information -->
 <status-bar class="status-bar"></status-bar>

@@ -10,7 +10,8 @@ export class Tileset {
  * Class that models various graphical assets associated with a tileset.
  */
 export class Assets {
-  public constructor(public tiles: TileAsset,
+  public constructor(public name: string,
+                     public tiles: TileAsset,
                      public entities: EntityAsset) {}
 }
 
