@@ -34,7 +34,8 @@ export class Brush {
    * @returns {PIXI.Sprite} The rendered sprite.
    */
   public paint(): PIXI.Sprite {
-    let baseTexture = PIXI.utils.TextureCache['/assets/' + this.tileset.image];
-    return new PIXI.Sprite(new PIXI.Texture(baseTexture, new PIXI.Rectangle(this.tile.x, this.tile.y, 32, 32)));
+    return new PIXI.Sprite(new PIXI.Texture(
+      PIXI.utils.TextureCache['/assets/' + this.tileset.image],
+      new PIXI.Rectangle(this.tile.x, this.tile.y, this.tileset.assets.tiles.w, this.tileset.assets.tiles.h)));
   }
 }

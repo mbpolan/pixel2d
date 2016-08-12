@@ -42,7 +42,6 @@ export class WorldEditorComponent implements AfterViewInit {
     // request tilesets that we can show the user
     this.tilesetService.getTilesets().subscribe((tilesets: Tileset[]) => {
       this.tilesets = tilesets;
-      console.log(tilesets);
 
       // show the first tileset
       if (this.tilesets.length > 0) {
