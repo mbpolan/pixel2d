@@ -36,6 +36,7 @@ export class MapCanvasComponent {
   private canvas: PIXI.Container;
   private canvasWidth: number;
   private canvasHeight: number;
+  private tiles: Tile[][];
 
   // extra elements and overlays on the canvas
   private gridLines: PIXI.Container;
@@ -123,6 +124,12 @@ export class MapCanvasComponent {
     // always add the cursor to the stage
     this.canvas.addChild(this.gridLines);
     this.canvas.addChild(this.cursor);
+
+    // initialize the map of references to tiles
+    this.tiles = [];
+    for (let i = 0; i < this.tilesWide; i++) {
+      this.tiles[i] = [];
+    }
 
     // refresh all editor features at this point
     this.updateEditor();
@@ -256,7 +263,13 @@ export class MapCanvasComponent {
       sprite.x = pos.x * TILE_SIZE;
       sprite.y = pos.y * TILE_SIZE;
 
+      // if there is already a tile at this position, remove it prior to add the new one
+      if (this.tiles[pos.x][pos.y]) {
+        this.canvas.removeChild(this.tiles[pos.x][pos.y]);
+      }
+
       this.canvas.addChild(sprite);
+      this.tiles[pos.x][pos.y] = sprite;
       this.lastDrawPoint = pos;
     }
   }
