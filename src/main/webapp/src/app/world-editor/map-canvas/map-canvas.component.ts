@@ -47,14 +47,17 @@ export class MapCanvasComponent {
 
   // brushes
   private brush: Brush;
+  private drawMode: boolean;
+  private lastDrawPoint: PIXI.Point;
 
   // location of map cursor and observable for notifications
   private cursorPos: Cursor;
   private cursorAction = new Subject<Cursor>();
   public cursorUpdated$ = this.cursorAction.asObservable();
 
-  public constructor(private tilesetService: TilesetService) {
+  public constructor() {
     this.brush = new Brush();
+    this.drawMode = false;
   }
 
   /**
@@ -105,7 +108,8 @@ export class MapCanvasComponent {
 
       // set the stage to be interactive and track mouse movements
       this.canvas.interactive = true;
-      this.canvas.on('click', (e) => this.onClick(e));
+      this.canvas.on('mousedown', (e) => this.onMouseDown(e));
+      this.canvas.on('mouseup', () => this.onMouseUp());
       this.canvas.on('mousemove', (e) => this.onMouseMove(e));
 
       this.renderLoop();
@@ -173,20 +177,24 @@ export class MapCanvasComponent {
   }
 
   /**
-   * Handler invoked then the mouse is clicked on the canvas.
+   * Handler invoked when the mouse button is pressed.
    *
    * @param e The native mouse event.
    */
-  private onClick(e: any): void {
+  private onMouseDown(e: any): void {
     if (this.brush.isValid()) {
-      let pos = this.getTilePosition(e.data.global.x, e.data.global.y);
+      this.drawMode = true;
 
-      // render the tile and place it on the canvas.
-      let sprite = this.brush.paint();
-      sprite.x = pos.x * TILE_SIZE;
-      sprite.y = pos.y * TILE_SIZE;
-      this.canvas.addChild(sprite);
+      this.drawAt(this.getTilePosition(e.data.global.x, e.data.global.y));
     }
+  }
+
+  /**
+   * Handler invoked when the mouse button is released.
+   */
+  private onMouseUp(): void {
+    this.drawMode = false;
+    this.lastDrawPoint = null;
   }
 
   /**
@@ -195,25 +203,30 @@ export class MapCanvasComponent {
    * @param e The native mouse event.
    */
   private onMouseMove(e: any): void {
-    if (this.cursor) {
-      // factor in the scroll offset when computing what tile we are hovering over
-      let tile = this.getTilePosition(e.data.global.x, e.data.global.y);
+    let pos = this.getTilePosition(e.data.global.x, e.data.global.y);
 
+    // update the cursor position
+    if (this.cursor) {
       // hide the cursor if it goes off-screen
-      if (tile.x >= this.tilesWide || tile.y >= this.tilesHigh) {
-        tile.x = -TILE_SIZE;
-        tile.y = -TILE_SIZE;
+      if (pos.x >= this.tilesWide || pos.y >= this.tilesHigh) {
+        pos.x = -TILE_SIZE;
+        pos.y = -TILE_SIZE;
       }
 
-      this.cursor.x = tile.x * TILE_SIZE;
-      this.cursor.y = tile.y * TILE_SIZE;
+      this.cursor.x = pos.x * TILE_SIZE;
+      this.cursor.y = pos.y * TILE_SIZE;
 
       // update the cursor location if it has changed
-      if (tile.x + 1 !== this.cursorPos.x || tile.y + 1 !== this.cursorPos.y) {
-        this.cursorPos.x = tile.x + 1;
-        this.cursorPos.y = tile.y + 1;
+      if (pos.x + 1 !== this.cursorPos.x || pos.y + 1 !== this.cursorPos.y) {
+        this.cursorPos.x = pos.x + 1;
+        this.cursorPos.y = pos.y + 1;
         this.cursorAction.next(this.cursorPos);
       }
+    }
+
+    // if we are currently drawing, trigger another draw now
+    if (this.drawMode) {
+      this.drawAt(pos);
     }
   }
 
@@ -225,9 +238,27 @@ export class MapCanvasComponent {
    * @returns {PIXI.Point} The translated tile coordinates.
    */
   private getTilePosition(x: number, y: number): PIXI.Point {
+    // factor in the scroll offset when computing what tile we are hovering over
     return new PIXI.Point(
       Math.floor((Math.abs(this.canvas.x) + x) / TILE_SIZE),
       Math.floor((Math.abs(this.canvas.y) + y) / TILE_SIZE));
+  }
+
+  /**
+   * Draws the current brush at the given tile coordinates.
+   *
+   * @param pos The tile coordinates to draw on.
+   */
+  private drawAt(pos: PIXI.Point): void {
+    if (!this.lastDrawPoint || (this.lastDrawPoint.x !== pos.x || this.lastDrawPoint.y !== pos.y)) {
+      // render the tile and place it on the canvas
+      let sprite = this.brush.paint();
+      sprite.x = pos.x * TILE_SIZE;
+      sprite.y = pos.y * TILE_SIZE;
+
+      this.canvas.addChild(sprite);
+      this.lastDrawPoint = pos;
+    }
   }
 
   /**
