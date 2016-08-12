@@ -6,6 +6,9 @@ import {OnDestroy} from "@angular/core";
 import {Observable} from "rxjs";
 import {TimerObservable} from "rxjs/observable/TimerObservable";
 import {Subscription} from "rxjs";
+import {TilesetService} from "../tileset.service";
+import {Tileset, Tile} from "../tileset";
+import {Brush} from "./brush";
 
 // the size of a single tile in pixels
 const TILE_SIZE = 32;
@@ -42,10 +45,17 @@ export class MapCanvasComponent {
   private tilesWide: number;
   private tilesHigh: number;
 
+  // brushes
+  private brush: Brush;
+
   // location of map cursor and observable for notifications
   private cursorPos: Cursor;
   private cursorAction = new Subject<Cursor>();
   public cursorUpdated$ = this.cursorAction.asObservable();
+
+  public constructor(private tilesetService: TilesetService) {
+    this.brush = new Brush();
+  }
 
   /**
    * Creates a new canvas of the given size.
@@ -95,6 +105,7 @@ export class MapCanvasComponent {
 
       // set the stage to be interactive and track mouse movements
       this.canvas.interactive = true;
+      this.canvas.on('click', (e) => this.onClick(e));
       this.canvas.on('mousemove', (e) => this.onMouseMove(e));
 
       this.renderLoop();
@@ -111,6 +122,16 @@ export class MapCanvasComponent {
 
     // refresh all editor features at this point
     this.updateEditor();
+  }
+
+  /**
+   * Sets the tile to use as the canvas brush.
+   *
+   * @param tileset The tileset the tile belongs to.
+   * @param tile The tile.
+   */
+  public setTileBrush(tileset: Tileset, tile: Tile): void {
+    this.brush.setTile(tileset, tile);
   }
 
   /**
@@ -149,6 +170,64 @@ export class MapCanvasComponent {
         this.updateEditor();
       });
     }
+  }
+
+  /**
+   * Handler invoked then the mouse is clicked on the canvas.
+   *
+   * @param e The native mouse event.
+   */
+  private onClick(e: any): void {
+    if (this.brush.isValid()) {
+      let pos = this.getTilePosition(e.data.global.x, e.data.global.y);
+
+      // render the tile and place it on the canvas.
+      let sprite = this.brush.paint();
+      sprite.x = pos.x * TILE_SIZE;
+      sprite.y = pos.y * TILE_SIZE;
+      this.canvas.addChild(sprite);
+    }
+  }
+
+  /**
+   * Handler invoked when the mouse cursor moves over the canvas.
+   *
+   * @param e The native mouse event.
+   */
+  private onMouseMove(e: any): void {
+    if (this.cursor) {
+      // factor in the scroll offset when computing what tile we are hovering over
+      let tile = this.getTilePosition(e.data.global.x, e.data.global.y);
+
+      // hide the cursor if it goes off-screen
+      if (tile.x >= this.tilesWide || tile.y >= this.tilesHigh) {
+        tile.x = -TILE_SIZE;
+        tile.y = -TILE_SIZE;
+      }
+
+      this.cursor.x = tile.x * TILE_SIZE;
+      this.cursor.y = tile.y * TILE_SIZE;
+
+      // update the cursor location if it has changed
+      if (tile.x + 1 !== this.cursorPos.x || tile.y + 1 !== this.cursorPos.y) {
+        this.cursorPos.x = tile.x + 1;
+        this.cursorPos.y = tile.y + 1;
+        this.cursorAction.next(this.cursorPos);
+      }
+    }
+  }
+
+  /**
+   * Translates a local point into tile coordinates.
+   *
+   * @param x The x local coordinate.
+   * @param y The y local coordinate.
+   * @returns {PIXI.Point} The translated tile coordinates.
+   */
+  private getTilePosition(x: number, y: number): PIXI.Point {
+    return new PIXI.Point(
+      Math.floor((Math.abs(this.canvas.x) + x) / TILE_SIZE),
+      Math.floor((Math.abs(this.canvas.y) + y) / TILE_SIZE));
   }
 
   /**
@@ -232,35 +311,5 @@ export class MapCanvasComponent {
 
     g.endFill();
     return g;
-  }
-
-  /**
-   * Handler invoked when the mouse cursor moves over the canvas.
-   *
-   * @param e The native mouse event.
-   */
-  private onMouseMove(e: any): void {
-    if (this.cursor) {
-      // factor in the scroll offset when computing what tile we are hovering over
-      let tileX = Math.floor((Math.abs(this.canvas.x) + e.data.global.x) / TILE_SIZE);
-      let tileY = Math.floor((Math.abs(this.canvas.y) + e.data.global.y) / TILE_SIZE);
-
-      // hide the cursor if it goes off-screen
-      if (tileX >= this.tilesWide || tileY >= this.tilesHigh) {
-        tileX = -TILE_SIZE;
-        tileY = -TILE_SIZE;
-      }
-
-      this.cursor.x = tileX * TILE_SIZE;
-      this.cursor.y = tileY * TILE_SIZE;
-
-      // update the cursor location if it has changed
-      if (tileX + 1 !== this.cursorPos.x || tileY + 1 !== this.cursorPos.y) {
-        this.cursorPos.x = tileX + 1;
-        this.cursorPos.y = tileY + 1;
-        this.cursorAction.next(this.cursorPos);
-      }
-    }
-
   }
 }

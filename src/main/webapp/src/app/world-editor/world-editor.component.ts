@@ -40,8 +40,9 @@ export class WorldEditorComponent implements AfterViewInit {
     this.mapCanvas.cursorUpdated$.subscribe((c: Cursor) => this.statusBar.setCursor(c.x, c.y));
 
     // request tilesets that we can show the user
-    this.tilesetService.getTilesets().then((tilesets: Tileset[]) => {
+    this.tilesetService.getTilesets().subscribe((tilesets: Tileset[]) => {
       this.tilesets = tilesets;
+      console.log(tilesets);
 
       // show the first tileset
       if (this.tilesets.length > 0) {
@@ -66,6 +67,7 @@ export class WorldEditorComponent implements AfterViewInit {
    */
   private onTileSelected(tile: Tile): void {
     this.selectedTile = tile;
+    this.mapCanvas.setTileBrush(this.selectedTileset, tile);
   }
 
   /**
