@@ -1,18 +1,14 @@
-import {OnInit, TemplateRef, ViewContainerRef, ViewChild, ElementRef, Component} from "@angular/core";
+import {OnInit, TemplateRef, ViewContainerRef, ViewChild, ElementRef, Component, OnDestroy} from "@angular/core";
 import {ScrollBar, SCROLL_SIZE} from "./scrollbar";
-import {Subject} from "rxjs";
+import {Subject, Observable, Subscription} from "rxjs";
 import {Point2D} from "../point2d";
-import {OnDestroy} from "@angular/core";
-import {Observable} from "rxjs";
 import {TimerObservable} from "rxjs/observable/TimerObservable";
-import {Subscription} from "rxjs";
-import {TilesetService} from "../tileset.service";
-import {Tileset, Tile} from "../tileset";
+import {Tileset, Tile} from "../tilóeset";
 import {Brush} from "./brush";
 import {Cursor} from "./cursor";
 
 // the size of a single tile in pixels
-const TILE_SIZE = 32;
+const TILE_SIZE = 16;
 
 @Component({
   selector: 'map-canvas',
@@ -35,6 +31,7 @@ export class MapCanvasComponent {
 
   // the actual map canvas and its pixel dimensions
   private canvas: PIXI.Container;
+  private zoom: number;
   private canvasWidth: number;
   private canvasHeight: number;
   private tiles: PIXI.DisplayObject[][];
@@ -82,10 +79,13 @@ export class MapCanvasComponent {
 
       this.stage = new PIXI.Container();
 
+      // set the initialize zoom level on the canvas and compute its dimensions
+      this.zoom = 2;
+      this.updateCanvasSize();
+
       // create a new stage and size it to contain the amount of tiles
-      this.canvasWidth = width * TILE_SIZE;
-      this.canvasHeight = height * TILE_SIZE;
       this.canvas = new PIXI.Container();
+      this.canvas.scale.set(this.zoom, this.zoom);
       this.stage.addChild(this.canvas);
 
       // create a set of scrollbars across the x and y axis
@@ -122,8 +122,8 @@ export class MapCanvasComponent {
     }
 
     // always add the cursor to the stage
-    this.canvas.addChild(this.gridLines);
     this.canvas.addChild(this.cursor);
+    this.canvas.addChild(this.gridLines);
 
     // initialize the map of references to tiles
     this.tiles = [];
@@ -180,6 +180,25 @@ export class MapCanvasComponent {
         this.updateRenderer();
         this.updateEditor();
       });
+    }
+  }
+
+  /**
+   * Handler invoked when the mouse wheel is moved.
+   *
+   * @param e The native mouse wheel event.
+   */
+  private onMouseWheel(e: WheelEvent): void {
+    let delta = (e.wheelDelta / Math.abs(e.wheelDelta));
+
+    // prevent scaling the canvas to be too small
+    if (this.canvas && this.zoom + delta >= 1) {
+      this.zoom += delta;
+
+      // scale the canvas, recompute its dimensions and update the editor
+      this.canvas.scale.set(this.zoom, this.zoom);
+      this.updateCanvasSize();
+      this.updateEditor();
     }
   }
 
@@ -241,8 +260,8 @@ export class MapCanvasComponent {
   private getTilePosition(x: number, y: number): PIXI.Point {
     // factor in the scroll offset when computing what tile we are hovering over
     return new PIXI.Point(
-      Math.floor((Math.abs(this.canvas.x) + x) / TILE_SIZE),
-      Math.floor((Math.abs(this.canvas.y) + y) / TILE_SIZE));
+      Math.floor((Math.abs(this.canvas.x) + x) / (TILE_SIZE * this.zoom)),
+      Math.floor((Math.abs(this.canvas.y) + y) / (TILE_SIZE * this.zoom)));
   }
 
   /**
@@ -267,6 +286,9 @@ export class MapCanvasComponent {
       this.canvas.addChild(sprite);
       this.tiles[pos.x][pos.y] = sprite;
       this.lastDrawPoint = pos;
+
+      // move the gridlines to the top of the stack
+      this.canvas.addChild(this.gridLines);
     }
   }
 
@@ -276,6 +298,14 @@ export class MapCanvasComponent {
   private updateRenderer(): void {
     var rect = this.root.nativeElement.getBoundingClientRect();
     this.renderer.resize(rect.width, rect.height);
+  }
+
+  /**
+   * Recomputes the size of the canvas.
+   */
+  private updateCanvasSize(): void {
+    this.canvasWidth = this.tilesWide * TILE_SIZE * this.zoom;
+    this.canvasHeight = this.tilesHigh * TILE_SIZE * this.zoom;
   }
 
   /**
