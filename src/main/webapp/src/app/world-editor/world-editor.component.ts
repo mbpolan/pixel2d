@@ -5,7 +5,7 @@ import {TAB_DIRECTIVES} from "ng2-bootstrap";
 import {WorldActions} from "./world-actions.service";
 import {MapDetails} from "../map-details";
 import {StatusBarComponent} from "./status-bar/status-bar.component";
-import {Cursor} from "./cursor";
+import {Point2D} from "./point2d";
 import {TilesetService} from "./tileset.service";
 import {Tile, Tileset} from "./tileset";
 
@@ -37,7 +37,7 @@ export class WorldEditorComponent implements AfterViewInit {
    */
   public ngAfterViewInit(): void {
     // listen for cursor movements and update them on the status bar
-    this.mapCanvas.cursorUpdated$.subscribe((c: Cursor) => this.statusBar.setCursor(c.x, c.y));
+    this.mapCanvas.cursorUpdated$.subscribe((c: Point2D) => this.statusBar.setCursor(c.x, c.y));
 
     // request tilesets that we can show the user
     this.tilesetService.getTilesets().subscribe((tilesets: Tileset[]) => {

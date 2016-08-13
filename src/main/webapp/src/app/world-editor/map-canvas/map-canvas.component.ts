@@ -1,7 +1,7 @@
 import {OnInit, TemplateRef, ViewContainerRef, ViewChild, ElementRef, Component} from "@angular/core";
 import {ScrollBar, SCROLL_SIZE} from "./scrollbar";
 import {Subject} from "rxjs";
-import {Cursor} from "../cursor";
+import {Point2D} from "../point2d";
 import {OnDestroy} from "@angular/core";
 import {Observable} from "rxjs";
 import {TimerObservable} from "rxjs/observable/TimerObservable";
@@ -9,6 +9,7 @@ import {Subscription} from "rxjs";
 import {TilesetService} from "../tileset.service";
 import {Tileset, Tile} from "../tileset";
 import {Brush} from "./brush";
+import {Cursor} from "./cursor";
 
 // the size of a single tile in pixels
 const TILE_SIZE = 32;
@@ -36,11 +37,11 @@ export class MapCanvasComponent {
   private canvas: PIXI.Container;
   private canvasWidth: number;
   private canvasHeight: number;
-  private tiles: Tile[][];
+  private tiles: PIXI.DisplayObject[][];
 
   // extra elements and overlays on the canvas
   private gridLines: PIXI.Container;
-  private cursor: PIXI.Container;
+  private cursor: Cursor;
 
   // size of the map in tiles
   private tilesWide: number;
@@ -52,8 +53,8 @@ export class MapCanvasComponent {
   private lastDrawPoint: PIXI.Point;
 
   // location of map cursor and observable for notifications
-  private cursorPos: Cursor;
-  private cursorAction = new Subject<Cursor>();
+  private cursorPos: Point2D;
+  private cursorAction = new Subject<Point2D>();
   public cursorUpdated$ = this.cursorAction.asObservable();
 
   public constructor() {
@@ -82,10 +83,9 @@ export class MapCanvasComponent {
       this.stage = new PIXI.Container();
 
       // create a new stage and size it to contain the amount of tiles
-      this.canvas = new PIXI.Container();
       this.canvasWidth = width * TILE_SIZE;
       this.canvasHeight = height * TILE_SIZE;
-
+      this.canvas = new PIXI.Container();
       this.stage.addChild(this.canvas);
 
       // create a set of scrollbars across the x and y axis
@@ -104,8 +104,8 @@ export class MapCanvasComponent {
       this.gridLines = this.createGridLines();
 
       // create a new tile cursor
-      this.cursor = this.createCursor();
-      this.cursorPos = new Cursor(1, 1);
+      this.cursor = new Cursor(TILE_SIZE);
+      this.cursorPos = new Point2D(1, 1);
 
       // set the stage to be interactive and track mouse movements
       this.canvas.interactive = true;
@@ -214,12 +214,6 @@ export class MapCanvasComponent {
 
     // update the cursor position
     if (this.cursor) {
-      // hide the cursor if it goes off-screen
-      if (pos.x >= this.tilesWide || pos.y >= this.tilesHigh) {
-        pos.x = -TILE_SIZE;
-        pos.y = -TILE_SIZE;
-      }
-
       this.cursor.x = pos.x * TILE_SIZE;
       this.cursor.y = pos.y * TILE_SIZE;
 
@@ -257,7 +251,9 @@ export class MapCanvasComponent {
    * @param pos The tile coordinates to draw on.
    */
   private drawAt(pos: PIXI.Point): void {
-    if (!this.lastDrawPoint || (this.lastDrawPoint.x !== pos.x || this.lastDrawPoint.y !== pos.y)) {
+    if ((!this.lastDrawPoint || (this.lastDrawPoint.x !== pos.x || this.lastDrawPoint.y !== pos.y)) &&
+      (pos.x >= 0 && pos.x < this.tilesWide) && (pos.y >= 0 && pos.y < this.tilesHigh)) {
+
       // render the tile and place it on the canvas
       let sprite = this.brush.paint();
       sprite.x = pos.x * TILE_SIZE;
@@ -316,21 +312,6 @@ export class MapCanvasComponent {
 
     this.renderer.render(this.stage);
   };
-
-  /**
-   * Creates a rectangle cursor used to track the currently moused-over tile.
-   *
-   * @returns {PIXI.Graphics} A rectangle container.
-   */
-  private createCursor(): any {
-    let g = new PIXI.Graphics();
-
-    g.beginFill(0x0077FF, 0.5);
-    g.drawRect(0, 0, TILE_SIZE, TILE_SIZE);
-    g.endFill();
-
-    return g;
-  }
 
   /**
    * Draws a series of grdlines across the entire stage.
