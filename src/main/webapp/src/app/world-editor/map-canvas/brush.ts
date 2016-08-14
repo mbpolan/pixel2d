@@ -83,8 +83,11 @@ export class Brush {
    * @returns {PIXI.Sprite} The rendered sprite.
    */
   public paint(): PIXI.Sprite {
-    return new PIXI.Sprite(new PIXI.Texture(
+    let spr = new PIXI.Sprite(new PIXI.Texture(
       PIXI.utils.TextureCache['/assets/' + this.tileset.image],
       new PIXI.Rectangle(this.tile.x, this.tile.y, this.tileset.assets.tiles.w, this.tileset.assets.tiles.h)));
+
+    spr.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
+    return spr;
   }
 }
