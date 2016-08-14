@@ -7,8 +7,9 @@ import {MapDetails} from "../map-details";
 import {StatusBarComponent} from "./status-bar/status-bar.component";
 import {Point2D} from "./point2d";
 import {TilesetService} from "./tileset.service";
-import {Tile, Tileset} from "./tileset";
+import {Tile, Tileset, Entity} from "./tileset";
 import {AppActions} from "../app-actions.service";
+import {BrushMode} from "./map-canvas/brush";
 
 @Component({
   selector: 'world-editor',
@@ -28,6 +29,7 @@ export class WorldEditorComponent implements AfterViewInit {
   private tilesets: Tileset[];
   private selectedTileset: Tileset;
   private selectedTile: Tile;
+  private selectedSprite: Entity;
 
   public constructor(private appActions: AppActions,
                      private tilesetService: TilesetService,
@@ -72,7 +74,27 @@ export class WorldEditorComponent implements AfterViewInit {
    */
   private onTileSelected(tile: Tile): void {
     this.selectedTile = tile;
+    this.selectedSprite = null;
+
+    // enable all brush modes
+    this.appActions.toggleBrushMode(BrushMode.Fill, true);
+
     this.mapCanvas.setTileBrush(this.selectedTileset, tile);
+  }
+
+  /**
+   * Handler invoked when the user picks a sprite.
+   *
+   * @param sprite The chosen sprite.
+   */
+  private onSpriteSelectde(sprite: Entity): void {
+    this.selectedTile = null;
+    this.selectedSprite = sprite;
+
+    // disable the fill area mode
+    this.appActions.toggleBrushMode(BrushMode.Fill, false);
+
+    this.mapCanvas.setSpriteBrush(this.selectedTileset, sprite);
   }
 
   /**

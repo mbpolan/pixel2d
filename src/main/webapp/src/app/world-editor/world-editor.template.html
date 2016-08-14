@@ -12,6 +12,8 @@
 
     <!-- tabs for showing tileset assets -->
     <tabset *ngIf="selectedTileset">
+
+      <!-- tiles -->
       <tab heading="Tiles">
         <div *ngFor="let tile of selectedTileset.assets.tiles.textures" class="tile-entry-container"
              (click)="onTileSelected(tile)"
@@ -30,10 +32,14 @@
         </div>
       </tab>
 
+      <!-- sprites -->
       <tab heading="Sprites">
         <div *ngFor="let sprite of selectedTileset.assets.entities"
-             class="tile-entry-container">
+             class="tile-entry-container"
+             (click)="onSpriteSelectde(sprite)"
+             [class.tile-active]="selectedSprite === sprite">
 
+          <!-- preview image of the sprite -->
           <div class="tile-entry-image"
                [ngStyle]="{
                  'background-image': 'url(/assets/' + selectedTileset.image + ')',
@@ -41,8 +47,8 @@
                  'width': sprite.w + 'px',
                  'height': sprite.h + 'px'}"></div>
 
+          <!-- name of the sprite -->
           <span class="tile-entry-name">{{sprite.name}}</span>
-
         </div>
       </tab>
     </tabset>

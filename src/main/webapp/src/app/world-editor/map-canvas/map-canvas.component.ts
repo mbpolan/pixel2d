@@ -3,7 +3,7 @@ import {ScrollBar, SCROLL_SIZE} from "./scrollbar";
 import {Subject, Observable, Subscription} from "rxjs";
 import {Point2D} from "../point2d";
 import {TimerObservable} from "rxjs/observable/TimerObservable";
-import {Tileset, Tile} from "../tileset";
+import {Tileset, Tile, Entity} from "../tileset";
 import {Brush, BrushMode} from "./brush";
 import {Cursor} from "./cursor";
 
@@ -168,6 +168,16 @@ export class MapCanvasComponent {
   }
 
   /**
+   * Sets the sprite to use as the canvas brush.
+   *
+   * @param tileset The tileset the sprite belongs to.
+   * @param sprite The sprite.
+   */
+  public setSpriteBrush(tileset: Tileset, sprite: Entity): void {
+    this.brush.setSprite(tileset, sprite);
+  }
+
+  /**
    * Sets the mode in which the current brush operates.
    *
    * @param mode The draw mode of the current brush.
@@ -320,15 +330,19 @@ export class MapCanvasComponent {
   private drawAt(pos: PIXI.Point): void {
     switch (this.brush.getMode()) {
       case BrushMode.Pencil:
-        this.placeTile(pos);
+        this.brush.isTile() ? this.placeTile(pos) : this.placeSprite(pos);
         break;
 
       case BrushMode.Fill:
+        if (!this.brush.isTile()) {
+          throw new Error('Cannot use fill mode when drawing sprites')
+        }
+
         this.fillTiles(pos);
         break;
 
       case BrushMode.Eraser:
-        this.eraseTile(pos);
+        this.brush.isTile() ? this.eraseTile(pos) : null;
         break;
 
       default:
@@ -418,6 +432,20 @@ export class MapCanvasComponent {
 
       this.afterDraw();
     }
+  }
+
+  /**
+   * Draws the current brush's sprite at the given tile coordinates.
+   *
+   * @param pos The tile coordinates to draw on.
+   */
+  private placeSprite(pos: PIXI.Point): void {
+    let sprite = this.brush.paint();
+    sprite.x = pos.x * TILE_SIZE;
+    sprite.y = pos.y * TILE_SIZE;
+
+    // FIXME: this needs to go on its own layer
+    this.canvas.addChild(sprite);
   }
 
   /**

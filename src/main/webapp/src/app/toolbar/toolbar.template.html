@@ -22,6 +22,7 @@
   <div class="btn-group toolbar-group">
     <label *ngFor="let tool of tools"
            [class.active]="tool.active"
+           [class.disabled]="!tool.enabled"
            class="btn btn-sm btn-default"
            title="{{tool.tooltip}}"
            (click)="onToolSelected(tool)">

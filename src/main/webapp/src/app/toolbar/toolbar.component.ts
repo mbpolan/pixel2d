@@ -10,9 +10,8 @@ class ToolItem {
   public constructor(public mode: BrushMode,
                      public icon: string,
                      public tooltip: string,
-                     public active: boolean) {
-
-  }
+                     public active: boolean,
+                     public enabled: boolean = true) {}
 }
 
 @Component({
@@ -30,6 +29,8 @@ export class ToolbarComponent {
   ];
 
   public constructor(private appActions: AppActions) {
+    appActions.toggleBrushMode$.subscribe(toggle =>
+      this.tools.find(tool => tool.mode === toggle.mode).enabled = toggle.enabled);
   }
 
   /**
@@ -38,16 +39,18 @@ export class ToolbarComponent {
    * @param selected The newly chosen tool.
    */
   private onToolSelected(selected: ToolItem): void {
-    selected.active = !selected.active;
+    if (selected.enabled) {
+      selected.active = !selected.active;
 
-    for (let tool of this.tools) {
-      if (tool != selected) {
-        tool.active = (tool === selected);
+      for (let tool of this.tools) {
+        if (tool != selected) {
+          tool.active = (tool === selected);
+        }
       }
-    }
 
-    let activeTool = this.tools.find(tool => tool.active);
-    this.appActions.changeBrushMode(activeTool ? activeTool.mode : BrushMode.None);
+      let activeTool = this.tools.find(tool => tool.active);
+      this.appActions.changeBrushMode(activeTool ? activeTool.mode : BrushMode.None);
+    }
   }
 
   /**
