@@ -55,7 +55,7 @@ export class MapCanvasComponent {
 
   // brushes
   private brush: Brush;
-  private drawMode: boolean;
+  private continuousDraw: boolean;
   private lastDrawPoint: PIXI.Point;
 
   // location of map cursor and observable for notifications
@@ -65,7 +65,7 @@ export class MapCanvasComponent {
 
   public constructor() {
     this.brush = new Brush();
-    this.drawMode = false;
+    this.continuousDraw = false;
     this.gridLinesShown = true;
   }
 
@@ -240,7 +240,7 @@ export class MapCanvasComponent {
    */
   private onMouseDown(e: any): void {
     if (this.brush.isValid()) {
-      this.drawMode = true;
+      this.continuousDraw = this.brush.getMode() === BrushMode.Pencil;
 
       this.drawAt(this.getTilePosition(e.data.global.x, e.data.global.y));
     }
@@ -250,7 +250,7 @@ export class MapCanvasComponent {
    * Handler invoked when the mouse button is released.
    */
   private onMouseUp(): void {
-    this.drawMode = false;
+    this.continuousDraw = false;
     this.lastDrawPoint = null;
   }
 
@@ -276,7 +276,7 @@ export class MapCanvasComponent {
     }
 
     // if we are currently drawing, trigger another draw now
-    if (this.drawMode) {
+    if (this.continuousDraw) {
       this.drawAt(pos);
     }
   }
