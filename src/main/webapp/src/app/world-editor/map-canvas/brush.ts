@@ -4,6 +4,7 @@ import {Tileset, Tile} from "../tileset";
  * Enumeration of possible brush drawing modes.
  */
 export enum BrushMode {
+  None,
   Pencil,
   Fill
 }

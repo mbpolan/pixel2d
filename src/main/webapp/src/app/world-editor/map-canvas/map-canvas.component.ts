@@ -324,6 +324,9 @@ export class MapCanvasComponent {
       case BrushMode.Fill:
         this.fillTiles(pos);
         break;
+
+      default:
+        break;
     }
   }
 

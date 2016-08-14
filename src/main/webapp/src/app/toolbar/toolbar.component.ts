@@ -45,9 +45,8 @@ export class ToolbarComponent {
       }
     }
 
-    if (selected.active) {
-      this.appActions.changeBrushMode(selected.mode);
-    }
+    let activeTool = this.tools.find(tool => tool.active);
+    this.appActions.changeBrushMode(activeTool ? activeTool.mode : BrushMode.None);
   }
 
   /**
