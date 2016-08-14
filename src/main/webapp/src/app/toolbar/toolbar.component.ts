@@ -1,6 +1,6 @@
 import {Component, ViewChild, ViewContainerRef} from "@angular/core";
 import {MODAL_DIRECTIVES, BS_VIEW_PROVIDERS, ModalDirective} from "ng2-bootstrap";
-import {AppActions} from "../app-actions.service";
+import {AppActions, BrushModeToggle} from "../app-actions.service";
 import {BrushMode} from "../world-editor/map-canvas/brush";
 
 /**
@@ -23,14 +23,23 @@ export class ToolbarComponent {
 
   private showGridLines: boolean = true;
   private tools: ToolItem[] = [
+    new ToolItem(BrushMode.None, 'glyphicon-hand-up', 'Pointer tool', false),
     new ToolItem(BrushMode.Pencil, 'glyphicon-pencil', 'Pencil tool', true),
     new ToolItem(BrushMode.Fill, 'glyphicon-tint', 'Fill area tool', false),
     new ToolItem(BrushMode.Eraser, 'glyphicon-erase', 'Eraser tool', false)
   ];
 
   public constructor(private appActions: AppActions) {
-    appActions.toggleBrushMode$.subscribe(toggle =>
-      this.tools.find(tool => tool.mode === toggle.mode).enabled = toggle.enabled);
+    appActions.toggleBrushMode$.subscribe((toggle: BrushModeToggle) => {
+      // find the tool in question and enable or disable it
+      let tool = this.tools.find(t => t.mode === toggle.mode);
+      tool.enabled = toggle.enabled;
+
+      // if the tool was the currently selected one and its now disabled, choose another tool
+      if (tool.active && !toggle.enabled) {
+        this.onToolSelected(this.tools.find(t => t.enabled));
+      }
+    });
   }
 
   /**
@@ -42,10 +51,16 @@ export class ToolbarComponent {
     if (selected.enabled) {
       selected.active = !selected.active;
 
+      // disable all other tools
       for (let tool of this.tools) {
         if (tool != selected) {
           tool.active = (tool === selected);
         }
+      }
+
+      // if all tools have been unselected, then select the pointer tool as the default
+      if (this.tools.filter(tool => tool.active).length === 0) {
+        this.tools[0].active = true;
       }
 
       let activeTool = this.tools.find(tool => tool.active);

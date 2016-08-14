@@ -446,6 +446,7 @@ export class MapCanvasComponent {
 
     // FIXME: this needs to go on its own layer
     this.canvas.addChild(sprite);
+    this.afterDraw();
   }
 
   /**
