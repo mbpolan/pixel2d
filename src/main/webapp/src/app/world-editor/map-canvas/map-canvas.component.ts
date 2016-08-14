@@ -351,6 +351,8 @@ export class MapCanvasComponent {
         }
       }
     }
+
+    this.afterDraw();
   }
 
   /**
@@ -377,11 +379,19 @@ export class MapCanvasComponent {
       this.tiles[pos.x][pos.y] = new MapTile(sprite, this.brush.getTileset(), this.brush.getTile());
       this.lastDrawPoint = pos;
 
-      // move the cursor gridlines to the top of the stack
-      if (this.gridLinesShown) {
-        this.canvas.addChild(this.cursor);
-        this.canvas.addChild(this.gridLines);
-      }
+      this.afterDraw();
+    }
+  }
+
+  /**
+   * Performs some finishing touches after the canvas has been draw on.
+   */
+  private afterDraw(): void {
+    this.canvas.addChild(this.cursor);
+
+    // move the cursor gridlines to the top of the stack
+    if (this.gridLinesShown) {
+      this.canvas.addChild(this.gridLines);
     }
   }
 
