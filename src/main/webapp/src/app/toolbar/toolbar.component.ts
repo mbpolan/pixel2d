@@ -25,7 +25,8 @@ export class ToolbarComponent {
   private showGridLines: boolean = true;
   private tools: ToolItem[] = [
     new ToolItem(BrushMode.Pencil, 'glyphicon-pencil', 'Pencil tool', true),
-    new ToolItem(BrushMode.Fill, 'glyphicon-tint', 'Fill area tool', false)
+    new ToolItem(BrushMode.Fill, 'glyphicon-tint', 'Fill area tool', false),
+    new ToolItem(BrushMode.Eraser, 'glyphicon-erase', 'Eraser tool', false)
   ];
 
   public constructor(private appActions: AppActions) {

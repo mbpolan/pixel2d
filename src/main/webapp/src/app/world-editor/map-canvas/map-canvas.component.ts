@@ -240,7 +240,9 @@ export class MapCanvasComponent {
    */
   private onMouseDown(e: any): void {
     if (this.brush.isValid()) {
-      this.continuousDraw = this.brush.getMode() === BrushMode.Pencil;
+      // continuous drawing is only supported for pencil and eraser tools
+      let mode = this.brush.getMode();
+      this.continuousDraw = mode === BrushMode.Pencil || mode === BrushMode.Eraser;
 
       this.drawAt(this.getTilePosition(e.data.global.x, e.data.global.y));
     }
@@ -325,6 +327,10 @@ export class MapCanvasComponent {
         this.fillTiles(pos);
         break;
 
+      case BrushMode.Eraser:
+        this.eraseTile(pos);
+        break;
+
       default:
         break;
     }
@@ -371,6 +377,19 @@ export class MapCanvasComponent {
     }
 
     this.afterDraw();
+  }
+
+  /**
+   * Removes a tile at the given tile coordinates.
+   *
+   * @param pos The tile coordinates to erase at.
+   */
+  private eraseTile(pos: PIXI.Point): void {
+    let tile = this.tiles[pos.x][pos.y];
+    if (tile) {
+      this.canvas.removeChild(tile.sprite);
+      delete this.tiles[pos.x][pos.y];
+    }
   }
 
   /**

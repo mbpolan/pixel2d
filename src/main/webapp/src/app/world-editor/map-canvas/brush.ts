@@ -6,7 +6,8 @@ import {Tileset, Tile} from "../tileset";
 export enum BrushMode {
   None,
   Pencil,
-  Fill
+  Fill,
+  Eraser
 }
 
 /**
