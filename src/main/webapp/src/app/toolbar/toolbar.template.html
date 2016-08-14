@@ -1,9 +1,44 @@
 <div class="toolbar-container">
+  <!-- file actions -->
   <div class="btn-group toolbar-group">
     <button type="button" class="btn btn-sm btn-default"
+            title="Create a new map"
             (click)="onShowNewModal()">
       <span class="glyphicon glyphicon-file"></span>
     </button>
+
+    <button type="button" class="btn btn-sm btn-default"
+            title="Open an existing map">
+      <span class="glyphicon glyphicon-folder-open"></span>
+    </button>
+
+    <button type="button" class="btn btn-sm btn-default"
+            title="Save the current map">
+      <span class="glyphicon glyphicon-floppy-disk"></span>
+    </button>
+  </div>
+
+  <!-- tools -->
+  <div class="btn-group toolbar-group">
+    <button type="button" class="btn btn-sm btn-default"
+            title="Edit tool">
+      <span class="glyphicon glyphicon-pencil"></span>
+    </button>
+
+    <button type="button" class="btn btn-sm btn-default"
+            title="Fill tool">
+      <span class="glyphicon glyphicon-tint"></span>
+    </button>
+  </div>
+
+  <!-- view options -->
+  <div class="btn-group toolbar-group">
+    <label type="button" class="btn btn-sm btn-default"
+            title="Show or hide grid"
+            [class.active]="showGridLines"
+            (click)="onToggleGridLines()">
+      <span class="glyphicon glyphicon-th"></span>
+    </label>
   </div>
 </div>
 

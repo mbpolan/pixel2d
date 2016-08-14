@@ -8,6 +8,7 @@ import {StatusBarComponent} from "./status-bar/status-bar.component";
 import {Point2D} from "./point2d";
 import {TilesetService} from "./tileset.service";
 import {Tile, Tileset} from "./tileset";
+import {AppActions} from "../app-actions.service";
 
 @Component({
   selector: 'world-editor',
@@ -28,7 +29,11 @@ export class WorldEditorComponent implements AfterViewInit {
   private selectedTileset: Tileset;
   private selectedTile: Tile;
 
-  public constructor(private tilesetService: TilesetService, private worldActions: WorldActions) {
+  public constructor(private appActions: AppActions,
+                     private tilesetService: TilesetService,
+                     private worldActions: WorldActions) {
+
+    appActions.toggleGridLines$.subscribe(enabled => this.mapCanvas.setGridLinesShown(enabled));
     worldActions.initializeNew$.subscribe(details => this.initializeNew(details));
   }
 

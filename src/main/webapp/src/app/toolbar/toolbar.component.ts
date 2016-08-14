@@ -9,7 +9,14 @@ import {AppActions} from "../app-actions.service";
 })
 export class ToolbarComponent {
 
+  private showGridLines: boolean = true;
+
   public constructor(private appActions: AppActions) {
+  }
+
+  private onToggleGridLines(): void {
+    this.showGridLines = !this.showGridLines;
+    this.appActions.toggleGridLines(this.showGridLines);
   }
 
   /**

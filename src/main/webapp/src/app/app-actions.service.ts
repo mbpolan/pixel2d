@@ -6,10 +6,16 @@ import {OnInit} from "@angular/core";
 export class AppActions {
 
   private newMapAction = new Subject<any>();
+  private toggleGridLinesActions = new Subject<boolean>();
 
   public newMap$ = this.newMapAction.asObservable();
+  public toggleGridLines$ = this.toggleGridLinesActions.asObservable();
 
   public newMap(): void {
     this.newMapAction.next('newMap');
+  }
+
+  public toggleGridLines(shown: boolean): void {
+    this.toggleGridLinesActions.next(shown);
   }
 }

@@ -3,7 +3,7 @@ import {ScrollBar, SCROLL_SIZE} from "./scrollbar";
 import {Subject, Observable, Subscription} from "rxjs";
 import {Point2D} from "../point2d";
 import {TimerObservable} from "rxjs/observable/TimerObservable";
-import {Tileset, Tile} from "../tilóeset";
+import {Tileset, Tile} from "../tileset";
 import {Brush} from "./brush";
 import {Cursor} from "./cursor";
 
@@ -37,6 +37,7 @@ export class MapCanvasComponent {
   private tiles: PIXI.DisplayObject[][];
 
   // extra elements and overlays on the canvas
+  private gridLinesShown: boolean;
   private gridLines: PIXI.Container;
   private cursor: Cursor;
 
@@ -57,6 +58,19 @@ export class MapCanvasComponent {
   public constructor() {
     this.brush = new Brush();
     this.drawMode = false;
+    this.gridLinesShown = true;
+  }
+
+  /**
+   * Shows or hides the canvas grid lines.
+   *
+   * @param shown true to show the gridlines, false to hide.
+   */
+  public setGridLinesShown(shown: boolean) {
+    if (this.gridLines) {
+      this.gridLinesShown = shown;
+      shown ? this.canvas.addChild(this.gridLines) : this.canvas.removeChild(this.gridLines);
+    }
   }
 
   /**
@@ -287,8 +301,11 @@ export class MapCanvasComponent {
       this.tiles[pos.x][pos.y] = sprite;
       this.lastDrawPoint = pos;
 
-      // move the gridlines to the top of the stack
-      this.canvas.addChild(this.gridLines);
+      // move the cursor gridlines to the top of the stack
+      if (this.gridLinesShown) {
+        this.canvas.addChild(this.cursor);
+        this.canvas.addChild(this.gridLines);
+      }
     }
   }
 

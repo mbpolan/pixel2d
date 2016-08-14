@@ -6,3 +6,9 @@
 .toolbar-group {
   align-self: center;
 }
+
+.toolbar-group:not(:first-child) {
+  margin-left: 25px;
+  padding-left: 10px;
+  border-left: 1px solid #ddd;
+}
