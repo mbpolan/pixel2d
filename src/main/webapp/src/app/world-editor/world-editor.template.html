@@ -5,7 +5,7 @@
     <select class="form-control tileset-dropdown"
             (change)="onTilesetChanged($event.target.value)">
 
-      <option *ngFor="#tileset of tilesets; #i=index"
+      <option *ngFor="let tileset of tilesets; let i=index"
               value="{{tileset.assets.name}}"
               [selected]="i === 0 ? true : null">{{tileset.assets.name}}</option>
     </select>
@@ -27,6 +27,22 @@
 
           <!-- name of the tile -->
           <span class="tile-entry-name">{{tile.name}}</span>
+        </div>
+      </tab>
+
+      <tab heading="Sprites">
+        <div *ngFor="let sprite of selectedTileset.assets.entities"
+             class="tile-entry-container">
+
+          <div class="tile-entry-image"
+               [ngStyle]="{
+                 'background-image': 'url(/assets/' + selectedTileset.image + ')',
+                 'background-position': '-' + sprite.x + 'px -' + sprite.y + 'px',
+                 'width': sprite.w + 'px',
+                 'height': sprite.h + 'px'}"></div>
+
+          <span class="tile-entry-name">{{sprite.name}}</span>
+
         </div>
       </tab>
     </tabset>

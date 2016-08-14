@@ -12,7 +12,7 @@ export class Tileset {
 export class Assets {
   public constructor(public name: string,
                      public tiles: TileAsset,
-                     public entities: EntityAsset) {}
+                     public entities: Entity) {}
 }
 
 /**
@@ -25,18 +25,18 @@ export class TileAsset {
 }
 
 /**
- * Class that models entity assets in a tileset.
- */
-export class EntityAsset {
-  public constructor(textures: Entity[]) {}
-}
-
-/**
  * Class that models a single tile im a larger tileset.
  */
 export class Tile {
   public constructor(public id: number,
                      public name: string,
+                     public x: number,
+                     public y: number) {}
+}
+
+export class Box {
+  public constructor(public w: number,
+                     public h: number,
                      public x: number,
                      public y: number) {}
 }
@@ -50,5 +50,6 @@ export class Entity {
                      public w: number,
                      public h: number,
                      public x: number,
-                     public y: number) {}
+                     public y: number,
+                     public box: Box) {}
 }
