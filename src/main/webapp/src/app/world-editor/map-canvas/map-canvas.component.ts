@@ -4,11 +4,19 @@ import {Subject, Observable, Subscription} from "rxjs";
 import {Point2D} from "../point2d";
 import {TimerObservable} from "rxjs/observable/TimerObservable";
 import {Tileset, Tile} from "../tileset";
-import {Brush} from "./brush";
+import {Brush, BrushMode} from "./brush";
 import {Cursor} from "./cursor";
 
 // the size of a single tile in pixels
 const TILE_SIZE = 16;
+
+class MapTile {
+
+  public constructor(public sprite: PIXI.DisplayObject,
+                     public tileset: Tileset,
+                     public tile: Tile) {
+  }
+}
 
 @Component({
   selector: 'map-canvas',
@@ -34,7 +42,7 @@ export class MapCanvasComponent {
   private zoom: number;
   private canvasWidth: number;
   private canvasHeight: number;
-  private tiles: PIXI.DisplayObject[][];
+  private tiles: MapTile[][];
 
   // extra elements and overlays on the canvas
   private gridLinesShown: boolean;
@@ -59,18 +67,6 @@ export class MapCanvasComponent {
     this.brush = new Brush();
     this.drawMode = false;
     this.gridLinesShown = true;
-  }
-
-  /**
-   * Shows or hides the canvas grid lines.
-   *
-   * @param shown true to show the gridlines, false to hide.
-   */
-  public setGridLinesShown(shown: boolean) {
-    if (this.gridLines) {
-      this.gridLinesShown = shown;
-      shown ? this.canvas.addChild(this.gridLines) : this.canvas.removeChild(this.gridLines);
-    }
   }
 
   /**
@@ -150,6 +146,18 @@ export class MapCanvasComponent {
   }
 
   /**
+   * Shows or hides the canvas grid lines.
+   *
+   * @param shown true to show the gridlines, false to hide.
+   */
+  public setGridLinesShown(shown: boolean) {
+    if (this.gridLines) {
+      this.gridLinesShown = shown;
+      shown ? this.canvas.addChild(this.gridLines) : this.canvas.removeChild(this.gridLines);
+    }
+  }
+
+  /**
    * Sets the tile to use as the canvas brush.
    *
    * @param tileset The tileset the tile belongs to.
@@ -157,6 +165,15 @@ export class MapCanvasComponent {
    */
   public setTileBrush(tileset: Tileset, tile: Tile): void {
     this.brush.setTile(tileset, tile);
+  }
+
+  /**
+   * Sets the mode in which the current brush operates.
+   *
+   * @param mode The draw mode of the current brush.
+   */
+  public setBrushMode(mode: BrushMode): void {
+    this.brush.setMode(mode);
   }
 
   /**
@@ -279,11 +296,69 @@ export class MapCanvasComponent {
   }
 
   /**
+   * Performs a draw operation starting at the given position.
+   *
+   * Depending on the current brush mode, the actual area drawn may be larger than
+   * just the tile under the given point.
+   *
+   * @param pos The position to draw at.
+   */
+  private drawAt(pos: PIXI.Point): void {
+    switch (this.brush.getMode()) {
+      case BrushMode.Pencil:
+        this.placeTile(pos);
+        break;
+
+      case BrushMode.Fill:
+        this.fillTiles(pos);
+        break;
+    }
+  }
+
+  /**
+   * Draws over a region of tiles that match the tile under the given position.
+   *
+   * If the starting position has no tile, then all empty tiles that border this one will
+   * be painted over.
+   *
+   * @param pos The tile coordinates of the starting tile.
+   */
+  private fillTiles(pos: PIXI.Point): void {
+    // draw the tile at this position regardless
+    let thisTile = this.tiles[pos.x][pos.y];
+    this.placeTile(pos);
+
+    // define a function to check if a tile is a candidate for the fill algorithm
+    let sameAs = (pt: PIXI.Point): boolean => {
+      let other = this.tiles[pt.x][pt.y];
+
+      return ((!other && !thisTile) || (other && thisTile &&
+          (other.tileset == thisTile.tileset && other.tile === thisTile.tile)));
+    };
+
+    let stack: PIXI.Point[] = [pos];
+    while (stack.length > 0) {
+      let p = stack.pop();
+      let neighbors = [new PIXI.Point(p.x, p.y - 1), new PIXI.Point(p.x - 1, p.y),
+                       new PIXI.Point(p.x + 1, p.y) , new PIXI.Point(p.x, p.y + 1)];
+
+      for (let n of neighbors) {
+        // if the point is valid and its the same as the source tile, then draw over it and examine
+        // its neighbors in turn
+        if ((n.x >= 0 && n.x < this.tilesWide && n.y >= 0 && n.y < this.tilesHigh) && sameAs(n)) {
+          this.placeTile(n);
+          stack.push(n);
+        }
+      }
+    }
+  }
+
+  /**
    * Draws the current brush at the given tile coordinates.
    *
    * @param pos The tile coordinates to draw on.
    */
-  private drawAt(pos: PIXI.Point): void {
+  private placeTile(pos: PIXI.Point): void {
     if ((!this.lastDrawPoint || (this.lastDrawPoint.x !== pos.x || this.lastDrawPoint.y !== pos.y)) &&
       (pos.x >= 0 && pos.x < this.tilesWide) && (pos.y >= 0 && pos.y < this.tilesHigh)) {
 
@@ -293,12 +368,13 @@ export class MapCanvasComponent {
       sprite.y = pos.y * TILE_SIZE;
 
       // if there is already a tile at this position, remove it prior to add the new one
-      if (this.tiles[pos.x][pos.y]) {
-        this.canvas.removeChild(this.tiles[pos.x][pos.y]);
+      let oldTile = this.tiles[pos.x][pos.y];
+      if (oldTile && (oldTile.tileset !== this.brush.getTileset() || oldTile.tile !== this.brush.getTile())) {
+        this.canvas.removeChild(this.tiles[pos.x][pos.y].sprite);
       }
 
       this.canvas.addChild(sprite);
-      this.tiles[pos.x][pos.y] = sprite;
+      this.tiles[pos.x][pos.y] = new MapTile(sprite, this.brush.getTileset(), this.brush.getTile());
       this.lastDrawPoint = pos;
 
       // move the cursor gridlines to the top of the stack

@@ -20,20 +20,18 @@
 
   <!-- tools -->
   <div class="btn-group toolbar-group">
-    <button type="button" class="btn btn-sm btn-default"
-            title="Edit tool">
-      <span class="glyphicon glyphicon-pencil"></span>
-    </button>
-
-    <button type="button" class="btn btn-sm btn-default"
-            title="Fill tool">
-      <span class="glyphicon glyphicon-tint"></span>
-    </button>
+    <label *ngFor="let tool of tools"
+           [class.active]="tool.active"
+           class="btn btn-sm btn-default"
+           title="{{tool.tooltip}}"
+           (click)="onToolSelected(tool)">
+      <span class="glyphicon" [ngClass]="tool.icon"></span>
+    </label>
   </div>
 
   <!-- view options -->
   <div class="btn-group toolbar-group">
-    <label type="button" class="btn btn-sm btn-default"
+    <label class="btn btn-sm btn-default"
             title="Show or hide grid"
             [class.active]="showGridLines"
             (click)="onToggleGridLines()">
