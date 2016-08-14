@@ -6,6 +6,7 @@ import {TimerObservable} from "rxjs/observable/TimerObservable";
 import {Tileset, Tile, Entity} from "../tileset";
 import {Brush, BrushMode} from "./brush";
 import {Cursor} from "./cursor";
+import {ScrollArea, ScrollDirection} from "./scrollarea";
 
 // the size of a single tile in pixels
 const TILE_SIZE = 16;
@@ -31,11 +32,7 @@ export class MapCanvasComponent {
   private pendingResize: Subscription;
   private renderer: any;
   private stage: PIXI.Container;
-
-  // scrollbars across the canvas
-  private scrollX: ScrollBar;
-  private scrollY: ScrollBar;
-  private scrollBorder: PIXI.Container;
+  private scrollArea: ScrollArea;
 
   // the actual map canvas and its pixel dimensions
   private canvas: PIXI.Container;
@@ -105,17 +102,9 @@ export class MapCanvasComponent {
       this.canvas.addChild(this.spriteLayer);
       this.stage.addChild(this.canvas);
 
-      // create a set of scrollbars across the x and y axis
-      this.scrollY = new ScrollBar(true, this.stage);
-      this.scrollX = new ScrollBar(false, this.stage);
-
-      // create a border to fill in gaps left by the scrollbars
-      this.scrollBorder = this.createScrollBorder();
-      this.stage.addChild(this.scrollBorder);
-
-      // and ask to be notified of any changes to the scroll positions
-      this.scrollY.scrolled$.subscribe((pct) => this.onScroll(pct, true));
-      this.scrollX.scrolled$.subscribe((pct) => this.onScroll(pct, false));
+      // create a scroll area and ask to be notified of any changes to the scroll positions
+      this.scrollArea = new ScrollArea(SCROLL_SIZE, this.stage);
+      this.scrollArea.scrolled$.subscribe(event => this.onScroll(event.pct, event.dir));
 
       // create grid lines for the map
       this.gridLines = this.createGridLines();
@@ -197,10 +186,10 @@ export class MapCanvasComponent {
    * Handler invoked when a scrollbar has been moved.
    *
    * @param pct The percentage of the total view that was scrolled.
-   * @param vertical true if this is the vertical scrollbar, false for horizontal.
+   * @param dir The direction in which the scroll event happened.
    */
-  private onScroll(pct: number, vertical: boolean): void {
-    if (vertical) {
+  private onScroll(pct: number, dir: ScrollDirection): void {
+    if (dir === ScrollDirection.Vertical) {
       this.canvas.y = -(this.canvasHeight * pct);
     }
 
@@ -471,26 +460,7 @@ export class MapCanvasComponent {
    * Updates various elements on the editor that are dependent on the renderer.
    */
   private updateEditor(): void {
-    // update the position of static elements
-    this.scrollBorder.x = this.renderer.width - SCROLL_SIZE;
-    this.scrollBorder.y = this.renderer.height - SCROLL_SIZE;
-
-    // redraw scrollbars
-    this.scrollY.reshape(this.renderer.width, this.renderer.height - SCROLL_SIZE, this.canvasWidth, this.canvasHeight);
-    this.scrollX.reshape(this.renderer.width - SCROLL_SIZE, this.renderer.height, this.canvasWidth, this.canvasHeight);
-  }
-
-  /**
-   * Creates an element for containing the scroll border around the canvas.
-   *
-   * @returns {PIXI.Graphics} A shape for the border.
-   */
-  private createScrollBorder(): PIXI.Graphics {
-    let g = new PIXI.Graphics();
-    g.beginFill(0xEFEFEF);
-    g.drawRect(0, 0, SCROLL_SIZE, SCROLL_SIZE);
-
-    return g;
+    this.scrollArea.update(this.renderer.width, this.renderer.height, this.canvasWidth, this.canvasHeight);
   }
 
   /**
