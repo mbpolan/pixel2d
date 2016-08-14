@@ -295,6 +295,18 @@ export class MapCanvasComponent {
       Math.floor((Math.abs(this.canvas.y) + y) / (TILE_SIZE * this.zoom)));
   }
 
+  private getViewableArea(): PIXI.Rectangle {
+    let scale = this.zoom * TILE_SIZE;
+
+    let x = Math.floor(Math.abs(this.canvas.x) / scale);
+    let y = Math.floor(Math.abs(this.canvas.y) / scale);
+
+    let w = Math.floor(Math.min(this.tilesWide * scale, this.renderer.width) / scale);
+    let h = Math.floor(Math.min(this.tilesHigh * scale, this.renderer.height) / scale);
+
+    return new PIXI.Rectangle(x, y, w, h);
+  }
+
   /**
    * Performs a draw operation starting at the given position.
    *
@@ -336,6 +348,9 @@ export class MapCanvasComponent {
           (other.tileset == thisTile.tileset && other.tile === thisTile.tile)));
     };
 
+    // compute the bounds to be restricted to the area the user can currently see
+    let bounds = this.getViewableArea();
+
     let stack: PIXI.Point[] = [pos];
     while (stack.length > 0) {
       let p = stack.pop();
@@ -345,7 +360,7 @@ export class MapCanvasComponent {
       for (let n of neighbors) {
         // if the point is valid and its the same as the source tile, then draw over it and examine
         // its neighbors in turn
-        if ((n.x >= 0 && n.x < this.tilesWide && n.y >= 0 && n.y < this.tilesHigh) && sameAs(n)) {
+        if (bounds.contains(n.x, n.y) && sameAs(n)) {
           this.placeTile(n);
           stack.push(n);
         }
