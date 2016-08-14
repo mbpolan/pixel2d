@@ -39,6 +39,8 @@ export class MapCanvasComponent {
 
   // the actual map canvas and its pixel dimensions
   private canvas: PIXI.Container;
+  private tileLayer: PIXI.Container;
+  private spriteLayer: PIXI.Container;
   private zoom: number;
   private canvasWidth: number;
   private canvasHeight: number;
@@ -95,7 +97,12 @@ export class MapCanvasComponent {
 
       // create a new stage and size it to contain the amount of tiles
       this.canvas = new PIXI.Container();
+      this.tileLayer = new PIXI.Container();
+      this.spriteLayer = new PIXI.Container();
       this.canvas.scale.set(this.zoom, this.zoom);
+
+      this.canvas.addChild(this.tileLayer);
+      this.canvas.addChild(this.spriteLayer);
       this.stage.addChild(this.canvas);
 
       // create a set of scrollbars across the x and y axis
@@ -389,8 +396,6 @@ export class MapCanvasComponent {
         }
       }
     }
-
-    this.afterDraw();
   }
 
   /**
@@ -401,7 +406,7 @@ export class MapCanvasComponent {
   private eraseTile(pos: PIXI.Point): void {
     let tile = this.tiles[pos.x][pos.y];
     if (tile) {
-      this.canvas.removeChild(tile.sprite);
+      this.tileLayer.removeChild(tile.sprite);
       delete this.tiles[pos.x][pos.y];
     }
   }
@@ -423,14 +428,12 @@ export class MapCanvasComponent {
       // if there is already a tile at this position, remove it prior to add the new one
       let oldTile = this.tiles[pos.x][pos.y];
       if (oldTile && (oldTile.tileset !== this.brush.getTileset() || oldTile.tile !== this.brush.getTile())) {
-        this.canvas.removeChild(this.tiles[pos.x][pos.y].sprite);
+        this.tileLayer.removeChild(this.tiles[pos.x][pos.y].sprite);
       }
 
-      this.canvas.addChild(sprite);
+      this.tileLayer.addChild(sprite);
       this.tiles[pos.x][pos.y] = new MapTile(sprite, this.brush.getTileset(), this.brush.getTile());
       this.lastDrawPoint = pos;
-
-      this.afterDraw();
     }
   }
 
@@ -445,20 +448,7 @@ export class MapCanvasComponent {
     sprite.y = pos.y * TILE_SIZE;
 
     // FIXME: this needs to go on its own layer
-    this.canvas.addChild(sprite);
-    this.afterDraw();
-  }
-
-  /**
-   * Performs some finishing touches after the canvas has been draw on.
-   */
-  private afterDraw(): void {
-    this.canvas.addChild(this.cursor);
-
-    // move the cursor gridlines to the top of the stack
-    if (this.gridLinesShown) {
-      this.canvas.addChild(this.gridLines);
-    }
+    this.spriteLayer.addChild(sprite);
   }
 
   /**
