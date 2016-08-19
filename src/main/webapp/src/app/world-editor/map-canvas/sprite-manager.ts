@@ -7,6 +7,7 @@ import {MapSprite} from "./elements";
  */
 export class SpriteManager {
 
+  private boundingBoxesShown = false;
   private map: MapSprite[][][];
 
   /**
@@ -37,6 +38,9 @@ export class SpriteManager {
     }
 
     this.map[x][y].push(sprite);
+
+    // show the sprite's bounding box if the option is currently enabled
+    sprite.showBoundingBox(this.boundingBoxesShown);
   }
 
   /**
@@ -71,6 +75,7 @@ export class SpriteManager {
    * @param enabled true to draw, false to not draw.
    */
   public toggleBoundingBoxes(enabled: boolean): void {
+    this.boundingBoxesShown = enabled;
     this.forEachSprite(sprite => sprite.showBoundingBox(enabled));
   }
 
