@@ -64,6 +64,17 @@ export class SpriteManager {
   }
 
   /**
+   * Toggles whether or not sprites should draw their bounding boxes.
+   *
+   * This will cause all sprites to be redrawn.
+   *
+   * @param enabled true to draw, false to not draw.
+   */
+  public toggleBoundingBoxes(enabled: boolean): void {
+    this.forEachSprite(sprite => sprite.showBoundingBox(enabled));
+  }
+
+  /**
    * Determines if a given sprite collides with another sprite.
    *
    * @param pos The intended position of the incoming sprite.
@@ -103,5 +114,20 @@ export class SpriteManager {
 
       return false;
     }));
+  }
+
+  /**
+   * Invokes a function on each sprite in the map.
+   *
+   * @param f The function to invoke.
+   */
+  private forEachSprite(f: (MapSprite) => void): void {
+    this.map.forEach(r => {
+      for (let c in r) {
+        if (r.hasOwnProperty(c) && r[c]) {
+          r[c].forEach(f);
+        }
+      }
+    });
   }
 }

@@ -22,6 +22,8 @@ class ToolItem {
 export class ToolbarComponent {
 
   private showGridLines: boolean = true;
+  private showBoundingBoxes: boolean = false;
+
   private tools: ToolItem[] = [
     new ToolItem(BrushMode.None, 'glyphicon-hand-up', 'Pointer tool', false),
     new ToolItem(BrushMode.Pencil, 'glyphicon-pencil', 'Pencil tool', true),
@@ -74,6 +76,14 @@ export class ToolbarComponent {
   private onToggleGridLines(): void {
     this.showGridLines = !this.showGridLines;
     this.appActions.toggleGridLines(this.showGridLines);
+  }
+
+  /**
+   * Handler invoked when the bounding boxes toggle has been selected.
+   */
+  private onToggleBoundingBoxes(): void {
+    this.showBoundingBoxes = !this.showBoundingBoxes;
+    this.appActions.toggleBoundingBoxes(this.showBoundingBoxes);
   }
 
   /**

@@ -143,10 +143,21 @@ export class MapCanvasComponent {
    *
    * @param shown true to show the gridlines, false to hide.
    */
-  public setGridLinesShown(shown: boolean) {
+  public setGridLinesShown(shown: boolean): void {
     if (this.gridLines) {
       this.gridLinesShown = shown;
       shown ? this.canvas.addChild(this.gridLines) : this.canvas.removeChild(this.gridLines);
+    }
+  }
+
+  /**
+   * Shows or hides the actual bounding boxes for each map element.
+   *
+   * @param shown true to show bounding boxes, false to hide.
+   */
+  public setBoundingBoxesShown(shown: boolean): void {
+    if (this.sprites) {
+      this.sprites.toggleBoundingBoxes(shown);
     }
   }
 

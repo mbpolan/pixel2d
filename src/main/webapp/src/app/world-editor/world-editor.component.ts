@@ -36,6 +36,7 @@ export class WorldEditorComponent implements AfterViewInit {
                      private worldActions: WorldActions) {
 
     appActions.toggleGridLines$.subscribe(enabled => this.mapCanvas.setGridLinesShown(enabled));
+    appActions.toggleBoundingBoxes$.subscribe(enabled => this.mapCanvas.setBoundingBoxesShown(enabled));
     appActions.brushModeChanged$.subscribe(mode => this.mapCanvas.setBrushMode(mode));
     worldActions.initializeNew$.subscribe(details => this.initializeNew(details));
   }

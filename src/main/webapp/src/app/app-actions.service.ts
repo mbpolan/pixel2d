@@ -12,11 +12,13 @@ export class AppActions {
 
   private newMapAction = new Subject<any>();
   private toggleGridLinesActions = new Subject<boolean>();
+  private toggleBoundingBoxesAction = new Subject<boolean>();
   private brushModeChangedAction = new Subject<BrushMode>();
   private toggleBrushModeAction = new Subject<BrushModeToggle>();
 
   public newMap$ = this.newMapAction.asObservable();
   public toggleGridLines$ = this.toggleGridLinesActions.asObservable();
+  public toggleBoundingBoxes$ = this.toggleBoundingBoxesAction.asObservable();
   public brushModeChanged$ = this.brushModeChangedAction.asObservable();
   public toggleBrushMode$ = this.toggleBrushModeAction.asObservable();
 
@@ -26,6 +28,10 @@ export class AppActions {
 
   public toggleGridLines(shown: boolean): void {
     this.toggleGridLinesActions.next(shown);
+  }
+
+  public toggleBoundingBoxes(shown: boolean): void {
+    this.toggleBoundingBoxesAction.next(shown);
   }
 
   public changeBrushMode(mode: BrushMode): void {

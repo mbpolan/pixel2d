@@ -38,6 +38,13 @@
             (click)="onToggleGridLines()">
       <span class="glyphicon glyphicon-th"></span>
     </label>
+
+    <label class="btn btn-sm btn-default"
+            title="Show or hide bounding boxes"
+            [class.active]="showBoundingBoxes"
+            (click)="onToggleBoundingBoxes()">
+      <span class="glyphicon glyphicon-modal-window"></span>
+    </label>
   </div>
 </div>
 
