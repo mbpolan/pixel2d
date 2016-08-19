@@ -114,9 +114,9 @@ export class Brush {
   /**
    * Renders a sprite represented by the brush configuration.
    *
-   * @returns {PIXI.Sprite} The rendered sprite.
+   * @returns {PIXI.Container} The rendered sprite.
    */
-  public paint(): PIXI.Sprite {
+  public paint(): PIXI.Container {
     let gfx: PIXI.Sprite;
     let baseTexture = PIXI.utils.TextureCache['/assets/' + this.tileset.image];
 

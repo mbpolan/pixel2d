@@ -1,5 +1,5 @@
 import {OnInit, TemplateRef, ViewContainerRef, ViewChild, ElementRef, Component, OnDestroy} from "@angular/core";
-import {ScrollBar, SCROLL_SIZE} from "./scrollbar";
+import {SCROLL_SIZE} from "./scrollbar";
 import {Subject, Observable, Subscription} from "rxjs";
 import {Point2D} from "../point2d";
 import {TimerObservable} from "rxjs/observable/TimerObservable";
@@ -7,17 +7,11 @@ import {Tileset, Tile, Entity} from "../tileset";
 import {Brush, BrushMode} from "./brush";
 import {Cursor} from "./cursor";
 import {ScrollArea, ScrollDirection} from "./scrollarea";
+import {SpriteManager} from "./sprite-manager";
+import {MapTile, MapSprite} from "./elements";
 
 // the size of a single tile in pixels
 const TILE_SIZE = 16;
-
-class MapTile {
-
-  public constructor(public sprite: PIXI.DisplayObject,
-                     public tileset: Tileset,
-                     public tile: Tile) {
-  }
-}
 
 @Component({
   selector: 'map-canvas',
@@ -42,6 +36,7 @@ export class MapCanvasComponent {
   private canvasWidth: number;
   private canvasHeight: number;
   private tiles: MapTile[][];
+  private sprites: SpriteManager;
 
   // extra elements and overlays on the canvas
   private gridLinesShown: boolean;
@@ -110,7 +105,7 @@ export class MapCanvasComponent {
       this.gridLines = this.createGridLines();
 
       // create a new tile cursor
-      this.cursor = new Cursor(TILE_SIZE);
+      this.cursor = new Cursor();
       this.cursorPos = new Point2D(1, 1);
 
       // set the stage to be interactive and track mouse movements
@@ -131,7 +126,9 @@ export class MapCanvasComponent {
     this.canvas.addChild(this.cursor);
     this.canvas.addChild(this.gridLines);
 
-    // initialize the map of references to tiles
+    // initialize the map of references to tiles and sprites
+    this.sprites = new SpriteManager(this.tilesWide, this.tilesHigh, TILE_SIZE);
+
     this.tiles = [];
     for (let i = 0; i < this.tilesWide; i++) {
       this.tiles[i] = [];
@@ -161,6 +158,7 @@ export class MapCanvasComponent {
    */
   public setTileBrush(tileset: Tileset, tile: Tile): void {
     this.brush.setTile(tileset, tile);
+    this.cursor.setTile(TILE_SIZE);
   }
 
   /**
@@ -171,6 +169,7 @@ export class MapCanvasComponent {
    */
   public setSpriteBrush(tileset: Tileset, sprite: Entity): void {
     this.brush.setSprite(tileset, sprite);
+    this.cursor.setSprite(tileset, sprite);
   }
 
   /**
@@ -180,6 +179,10 @@ export class MapCanvasComponent {
    */
   public setBrushMode(mode: BrushMode): void {
     this.brush.setMode(mode);
+
+    if (mode === BrushMode.None) {
+      this.cursor.setNone();
+    }
   }
 
   /**
@@ -303,6 +306,25 @@ export class MapCanvasComponent {
       Math.floor((Math.abs(this.canvas.y) + y) / (TILE_SIZE * this.zoom)));
   }
 
+  /**
+   * Translates a local point into tile coordinates without accounting for scale factor.
+   *
+   * @param x The x local coordinate.
+   * @param y The y local coordinate.
+   * @returns {PIXI.Point} The translated tile coordinates.
+   */
+  private getTilePositionNormal(x: number, y: number): PIXI.Point {
+    // factor in the scroll offset when computing what tile we are hovering over
+    return new PIXI.Point(
+      Math.floor((Math.abs(this.canvas.x) + x) / TILE_SIZE),
+      Math.floor((Math.abs(this.canvas.y) + y) / TILE_SIZE));
+  }
+
+  /**
+   * Returns the rectangle of tiles that's current visible in the viewport.
+   *
+   * @returns {PIXI.Rectangle} The viewable rectangle.
+   */
   private getViewableArea(): PIXI.Rectangle {
     let scale = this.zoom * TILE_SIZE;
 
@@ -432,12 +454,30 @@ export class MapCanvasComponent {
    * @param pos The tile coordinates to draw on.
    */
   private placeSprite(pos: PIXI.Point): void {
-    let sprite = this.brush.paint();
+    if (this.sprites.collides(pos, this.brush.getSprite())) {
+      console.log('collision!!!!');
+      return;
+    }
+
+    let sprite = new MapSprite(this.brush.paint(), this.brush.getTileset(), this.brush.getSprite());
     sprite.x = pos.x * TILE_SIZE;
     sprite.y = pos.y * TILE_SIZE;
 
-    // FIXME: this needs to go on its own layer
+    // add the sprite to our reference map
+    this.sprites.push(pos.x, pos.y, sprite);
+
+    // add the sprite and resort all of the sprites for proper z-ordering
     this.spriteLayer.addChild(sprite);
+    this.spriteLayer.children.sort((a: MapSprite, b: MapSprite) => {
+      let ta = this.getTilePositionNormal(a.x, a.y);
+      let tb = this.getTilePositionNormal(b.x, b.y);
+
+      // sort the two sprites based on the lowest coordinates of their bounding box, so those which higher
+      // values are drawn after those with lower values, and break ties based on who has the lowest overall
+      // y coordinate based on their height
+      let i = (a.y + (a.entity.box.y + a.entity.box.h)) - (b.y + (b.entity.box.y + b.entity.box.h));
+      return i === 0 ? b.entity.h - a.entity.h : i;
+    });
   }
 
   /**
