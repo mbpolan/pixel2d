@@ -9,12 +9,14 @@ import {Cursor} from "./cursor";
 import {ScrollArea, ScrollDirection} from "./scrollarea";
 import {SpriteManager} from "./sprite-manager";
 import {MapTile, MapSprite} from "./elements";
+import {ContextMenuComponent} from "./context-menu.component";
 
 // the size of a single tile in pixels
 const TILE_SIZE = 16;
 
 @Component({
   selector: 'map-canvas',
+  directives: [ContextMenuComponent],
   styleUrls: ['./map-canvas.style.css'],
   templateUrl: './map-canvas.template.html'
 })
@@ -22,6 +24,9 @@ export class MapCanvasComponent {
 
   @ViewChild('root')
   private root: ElementRef;
+
+  @ViewChild(ContextMenuComponent)
+  private contextMenu: ContextMenuComponent;
 
   private pendingResize: Subscription;
   private renderer: any;
@@ -235,6 +240,17 @@ export class MapCanvasComponent {
   }
 
   /**
+   * Handler invoked when the browser requests a context menu.
+   *
+   * @param e The native event.
+   * @returns {boolean} true to enable menu, false to disable.
+   */
+  private onContextMenu(e: Event): boolean {
+    // we draw our own context menu over this element so disable the browser's menu
+    return false;
+  }
+
+  /**
    * Handler invoked when the mouse wheel is moved.
    *
    * @param e The native mouse wheel event.
@@ -259,12 +275,40 @@ export class MapCanvasComponent {
    * @param e The native mouse event.
    */
   private onMouseDown(e: any): void {
-    if (this.brush.isValid()) {
-      // continuous drawing is only supported for pencil and eraser tools
-      let mode = this.brush.getMode();
-      this.continuousDraw = mode === BrushMode.Pencil || mode === BrushMode.Eraser;
+    // right mouse button clicked
+    switch (e.button) {
+      // right mouse button
+      case 2:
+        // hide the context menu if it's already open
+        if (this.contextMenu.isVisible()) {
+          this.contextMenu.hide();
+        }
 
-      this.drawAt(this.getTilePosition(e.data.global.x, e.data.global.y));
+        // otherwise show it under the mouse
+        else {
+          this.contextMenu.show(e.offsetX, e.offsetY);
+        }
+
+        break;
+
+      // every other button
+      default:
+        // hide the context menu if its currently shown
+        if (this.contextMenu.isVisible()) {
+          this.contextMenu.hide();
+        }
+
+        // check for the existence of e.data since we might receive the native browser click event
+        // instead of the massaged one provided by pixi
+        else if (e.data && this.brush.isValid()) {
+          // continuous drawing is only supported for pencil and eraser tools
+          let mode = this.brush.getMode();
+          this.continuousDraw = mode === BrushMode.Pencil || mode === BrushMode.Eraser;
+
+          this.drawAt(this.getTilePosition(e.data.global.x, e.data.global.y));
+        }
+
+        break;
     }
   }
 

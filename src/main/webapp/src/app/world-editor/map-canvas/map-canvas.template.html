@@ -1,2 +1,9 @@
-<div #root class="canvas-root" (window:resize)="onResize($event)" (mousewheel)="onMouseWheel($event)">
+<div class="container">
+  <div #root class="canvas-root"
+       (window:resize)="onResize($event)"
+       (mousewheel)="onMouseWheel($event)"
+       (mousedown)="onMouseDown($event)"
+       (contextmenu)="onContextMenu($event)">
+  </div>
+  <context-menu class="context-menu"></context-menu>
 </div>
