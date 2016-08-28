@@ -321,24 +321,27 @@ export class MapCanvasComponent {
    * @param e The native mouse event.
    */
   private onMouseMove(e: any): void {
-    let pos = this.getTilePosition(e.data.global.x, e.data.global.y);
+    // only track the cursor if the context menu is not already open
+    if (!this.contextMenu.isVisible()) {
+      let pos = this.getTilePosition(e.data.global.x, e.data.global.y);
 
-    // update the cursor position
-    if (this.cursor) {
-      this.cursor.x = pos.x * TILE_SIZE;
-      this.cursor.y = pos.y * TILE_SIZE;
+      // update the cursor position
+      if (this.cursor) {
+        this.cursor.x = pos.x * TILE_SIZE;
+        this.cursor.y = pos.y * TILE_SIZE;
 
-      // update the cursor location if it has changed
-      if (pos.x + 1 !== this.cursorPos.x || pos.y + 1 !== this.cursorPos.y) {
-        this.cursorPos.x = pos.x + 1;
-        this.cursorPos.y = pos.y + 1;
-        this.cursorAction.next(this.cursorPos);
+        // update the cursor location if it has changed
+        if (pos.x + 1 !== this.cursorPos.x || pos.y + 1 !== this.cursorPos.y) {
+          this.cursorPos.x = pos.x + 1;
+          this.cursorPos.y = pos.y + 1;
+          this.cursorAction.next(this.cursorPos);
+        }
       }
-    }
 
-    // if we are currently drawing, trigger another draw now
-    if (this.continuousDraw) {
-      this.drawAt(pos);
+      // if we are currently drawing, trigger another draw now
+      if (this.continuousDraw) {
+        this.drawAt(pos);
+      }
     }
   }
 
