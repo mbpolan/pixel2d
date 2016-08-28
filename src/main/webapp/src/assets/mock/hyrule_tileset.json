@@ -97,7 +97,7 @@
       "h": 32
     },
     {
-      "name": "grass-edge-1",
+      "name": "path-edge-br",
       "id": 103,
       "x": 80,
       "y": 16,
@@ -105,7 +105,7 @@
       "h": 8
     },
     {
-      "name": "grass-edge-2",
+      "name": "path-edge-b",
       "id": 104,
       "x": 88,
       "y": 16,
@@ -113,7 +113,7 @@
       "h": 8
     },
     {
-      "name": "grass-edge-3",
+      "name": "path-edge-bl",
       "id": 105,
       "x": 96,
       "y": 16,
@@ -121,7 +121,7 @@
       "h": 8
     },
     {
-      "name": "grass-edge-4",
+      "name": "path-edge-r",
       "id": 106,
       "x": 80,
       "y": 24,
@@ -129,42 +129,66 @@
       "h": 8
     },
     {
-      "name": "grass-edge-5",
+      "name": "path-edge-l",
       "id": 107,
-      "x": 88,
-      "y": 24,
-      "w": 8,
-      "h": 8
-    },
-    {
-      "name": "grass-edge-6",
-      "id": 108,
       "x": 96,
       "y": 24,
       "w": 8,
       "h": 8
     },
     {
-      "name": "grass-edge-7",
-      "id": 109,
+      "name": "path-edge-tr",
+      "id": 108,
       "x": 80,
       "y": 32,
       "w": 8,
       "h": 8
     },
     {
-      "name": "grass-edge-8",
-      "id": 110,
+      "name": "path-edge-t",
+      "id": 109,
       "x": 88,
       "y": 32,
       "w": 8,
       "h": 8
     },
     {
-      "name": "grass-edge-9",
-      "id": 111,
+      "name": "path-edge-tl",
+      "id": 110,
       "x": 96,
       "y": 32,
+      "w": 8,
+      "h": 8
+    },
+    {
+      "name": "grass-edge-fill-br",
+      "id": 111,
+      "x": 96,
+      "y": 0,
+      "w": 8,
+      "h": 8
+    },
+    {
+      "name": "grass-edge-fill-bl",
+      "id": 112,
+      "x": 104,
+      "y": 0,
+      "w": 8,
+      "h": 8
+    },
+    {
+      "name": "grass-edge-fill-tr",
+      "id": 113,
+      "x": 96,
+      "y": 8,
+      "w": 8,
+      "h": 8
+    },
+    {
+      "name": "grass-edge-fill-tl",
+      "id": 114,
+      "x": 104,
+      "y": 8,
       "w": 8,
       "h": 8
     }

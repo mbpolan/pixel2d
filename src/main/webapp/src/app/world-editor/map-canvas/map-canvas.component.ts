@@ -132,7 +132,7 @@ export class MapCanvasComponent {
     this.canvas.addChild(this.gridLines);
 
     // initialize the map of references to tiles and sprites
-    this.sprites = new SpriteManager(this.tilesWide, this.tilesHigh, TILE_SIZE);
+    this.sprites = new SpriteManager(this.tilesWide * 2, this.tilesHigh * 2, TILE_SIZE / 2);
 
     this.tiles = [];
     for (let i = 0; i < this.tilesWide; i++) {
@@ -300,7 +300,7 @@ export class MapCanvasComponent {
           let mode = this.brush.getMode();
           this.continuousDraw = mode === BrushMode.Pencil || mode === BrushMode.Eraser;
 
-          this.drawAt(this.getTilePosition(e.data.global.x, e.data.global.y));
+          this.drawAt(e.data.global.x, e.data.global.y);
         }
 
         break;
@@ -323,12 +323,15 @@ export class MapCanvasComponent {
   private onMouseMove(e: any): void {
     // only track the cursor if the context menu is not already open
     if (!this.contextMenu.isVisible()) {
-      let pos = this.getTilePosition(e.data.global.x, e.data.global.y);
+      let scale = this.brush.isTile() ? TILE_SIZE : TILE_SIZE / 2;
+      let pos = this.brush.isTile() ?
+        this.getTilePosition(e.data.global.x, e.data.global.y) :
+        this.getSubTilePosition(e.data.global.x, e.data.global.y);
 
       // update the cursor position
       if (this.cursor) {
-        this.cursor.x = pos.x * TILE_SIZE;
-        this.cursor.y = pos.y * TILE_SIZE;
+        this.cursor.x = pos.x * scale;
+        this.cursor.y = pos.y * scale;
 
         // update the cursor location if it has changed
         if (pos.x + 1 !== this.cursorPos.x || pos.y + 1 !== this.cursorPos.y) {
@@ -340,7 +343,7 @@ export class MapCanvasComponent {
 
       // if we are currently drawing, trigger another draw now
       if (this.continuousDraw) {
-        this.drawAt(pos);
+        this.drawAt(e.data.global.x, e.data.global.y);
       }
     }
   }
@@ -360,17 +363,17 @@ export class MapCanvasComponent {
   }
 
   /**
-   * Translates a local point into tile coordinates without accounting for scale factor.
+   * Translates a local point into sub-tile coordinates.
    *
    * @param x The x local coordinate.
    * @param y The y local coordinate.
-   * @returns {PIXI.Point} The translated tile coordinates.
+   * @returns {PIXI.Point} The translated sub-tile coordinates.
    */
-  private getTilePositionNormal(x: number, y: number): PIXI.Point {
+  private getSubTilePosition(x: number, y: number): PIXI.Point {
     // factor in the scroll offset when computing what tile we are hovering over
     return new PIXI.Point(
-      Math.floor((Math.abs(this.canvas.x) + x) / TILE_SIZE),
-      Math.floor((Math.abs(this.canvas.y) + y) / TILE_SIZE));
+      Math.floor((Math.abs(this.canvas.x) + x) / ((TILE_SIZE / 2) * this.zoom)),
+      Math.floor((Math.abs(this.canvas.y) + y) / ((TILE_SIZE / 2) * this.zoom)));
   }
 
   /**
@@ -396,12 +399,15 @@ export class MapCanvasComponent {
    * Depending on the current brush mode, the actual area drawn may be larger than
    * just the tile under the given point.
    *
-   * @param pos The position to draw at.
+   * @param x The x-coordinate on the canvas where to draw.
+   * @param y The y-coordinate on the canvas where to draw.
    */
-  private drawAt(pos: PIXI.Point): void {
+  private drawAt(x: number, y: number): void {
     switch (this.brush.getMode()) {
       case BrushMode.Pencil:
-        this.brush.isTile() ? this.placeTile(pos) : this.placeSprite(pos);
+        this.brush.isTile() ?
+          this.placeTile(this.getTilePosition(x, y)) :
+          this.placeSprite(this.getSubTilePosition(x, y));
         break;
 
       case BrushMode.Fill:
@@ -409,11 +415,11 @@ export class MapCanvasComponent {
           throw new Error('Cannot use fill mode when drawing sprites')
         }
 
-        this.fillTiles(pos);
+        this.fillTiles(this.getTilePosition(x, y));
         break;
 
       case BrushMode.Eraser:
-        this.brush.isTile() ? this.eraseTile(pos) : null;
+        this.brush.isTile() ? this.eraseTile(this.getTilePosition(x, y)) : null;
         break;
 
       default:
@@ -513,8 +519,8 @@ export class MapCanvasComponent {
     }
 
     let sprite = new MapSprite(this.brush.paint(), this.brush.getTileset(), this.brush.getSprite());
-    sprite.x = pos.x * TILE_SIZE;
-    sprite.y = pos.y * TILE_SIZE;
+    sprite.x = pos.x * (TILE_SIZE / 2);
+    sprite.y = pos.y * (TILE_SIZE / 2);
 
     // add the sprite to our reference map
     this.sprites.push(pos.x, pos.y, sprite);
