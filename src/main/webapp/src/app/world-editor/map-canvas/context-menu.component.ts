@@ -4,6 +4,7 @@ import {MapSprite} from "./elements";
 @Component({
   selector: 'context-menu',
   host: {
+    '(document: click)': 'onDocumentClick($event)',
     '[style.display]': 'display',
     '[style.top]': 'menuTop',
     '[style.left]': 'menuLeft',
@@ -18,6 +19,10 @@ export class ContextMenuComponent {
   private display: string = 'none';
   private visible: boolean = false;
   private sprites: Array<MapSprite> = [];
+
+  public constructor(private element: ElementRef) {
+
+  }
 
   /**
    * Returns whether the context menu is shown or not.
@@ -52,6 +57,18 @@ export class ContextMenuComponent {
     if (this.visible) {
       this.display = 'none';
       this.visible = false;
+    }
+  }
+
+  /**
+   * Handler invoked when a mouse click was done against the document.
+   *
+   * @param e The native mouse event.
+   */
+  private onDocumentClick(e: MouseEvent): void {
+    // FIXME: this really should use something like Renderer but the docs don't have a good approach
+    if (this.visible && e.target !== this.element.nativeElement && !this.element.nativeElement.contains(e.target)) {
+      this.hide();
     }
   }
 }

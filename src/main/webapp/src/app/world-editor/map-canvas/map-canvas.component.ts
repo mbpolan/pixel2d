@@ -279,13 +279,8 @@ export class MapCanvasComponent {
     switch (e.button) {
       // right mouse button
       case 2:
-        // hide the context menu if it's already open
-        if (this.contextMenu.isVisible()) {
-          this.contextMenu.hide();
-        }
-
-        // otherwise show it under the mouse
-        else {
+        // show the context menu if it's not already open
+        if (!this.contextMenu.isVisible()) {
           this.contextMenu.show(e.offsetX, e.offsetY, this.sprites.spritesUnder(e.offsetX, e.offsetY));
         }
 
