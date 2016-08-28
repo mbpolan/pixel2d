@@ -1,3 +1,4 @@
-<div (contextmenu)="onContextMenu($event)">
-  <span>Sprites at this point: {{numSprites}}</span>
+<div>
+  <div class="sprite-info-entry">Sprites at this point: {{sprites.length}}</div>
+  <div class="sprite-entry" *ngFor="let sprite of sprites">{{sprite.entity.name}}</div>
 </div>

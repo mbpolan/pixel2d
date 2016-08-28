@@ -80,6 +80,28 @@ export class SpriteManager {
   }
 
   /**
+   * Returns a list of sprites that are found under the given canvas coordinates.
+   *
+   * @param x The x-coordintae of the canvas.
+   * @param y The y-coordinate of the canvas.
+   * @returns The sprites whose area appears under the point.
+   */
+  public spritesUnder(x: number, y: number): Array<MapSprite> {
+    let matches = [];
+
+    // preallocate a rectangle so we don't keep creating new rectangles for each sprite bounds computation
+    let rect = new PIXI.Rectangle();
+
+    this.forEachSprite(s => {
+      if (s.getBounds(true, rect).contains(x, y)) {
+        matches.push(s);
+      }
+    });
+
+    return matches;
+  }
+
+  /**
    * Determines if a given sprite collides with another sprite.
    *
    * @param pos The intended position of the incoming sprite.

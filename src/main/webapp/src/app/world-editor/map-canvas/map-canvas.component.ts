@@ -286,7 +286,7 @@ export class MapCanvasComponent {
 
         // otherwise show it under the mouse
         else {
-          this.contextMenu.show(e.offsetX, e.offsetY);
+          this.contextMenu.show(e.offsetX, e.offsetY, this.sprites.spritesUnder(e.offsetX, e.offsetY));
         }
 
         break;

@@ -1,4 +1,14 @@
 :host {
   background-color: #FFFFFF;
-  width: 150px;
+  width: 200px;
+  padding: 0 5px;
+}
+
+.sprite-info-entry {
+  border-bottom: 1px solid #ddd;
+  padding: 5px 0 5px 0;
+}
+
+.sprite-entry {
+  margin: 5px 0 5px 0;
 }
