@@ -39,10 +39,12 @@ export class MapSprite extends PIXI.Container {
     super.addChild(sprite);
 
     // draw the bounding box in a faint color
-    this.bb = new PIXI.Graphics();
-    this.bb.beginFill(0xFF0000, 0.25);
-    this.bb.drawRect(this.entity.box.x, this.entity.box.y, this.entity.box.w, this.entity.box.h);
-    this.bb.endFill();
+    if (this.entity.box) {
+      this.bb = new PIXI.Graphics();
+      this.bb.beginFill(0xFF0000, 0.25);
+      this.bb.drawRect(this.entity.box.x, this.entity.box.y, this.entity.box.w, this.entity.box.h);
+      this.bb.endFill();
+    }
   }
 
   /**
@@ -51,6 +53,8 @@ export class MapSprite extends PIXI.Container {
    * @param yes true to draw, false to not draw.
    */
   public showBoundingBox(yes: boolean): void {
-    yes ? super.addChild(this.bb) : super.removeChild(this.bb);
+    if (this.bb) {
+      yes ? super.addChild(this.bb) : super.removeChild(this.bb);
+    }
   }
 }

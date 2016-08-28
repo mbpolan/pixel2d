@@ -480,13 +480,15 @@ export class MapCanvasComponent {
     // add the sprite and resort all of the sprites for proper z-ordering
     this.spriteLayer.addChild(sprite);
     this.spriteLayer.children.sort((a: MapSprite, b: MapSprite) => {
-      let ta = this.getTilePositionNormal(a.x, a.y);
-      let tb = this.getTilePositionNormal(b.x, b.y);
+      // if the sprite has a bounding box, use its dimensions to determine its height, otherwise use its
+      // graphical height
+      let ah = a.entity.box ? a.entity.box.y + a.entity.box.h : a.entity.h;
+      let bh = b.entity.box ? b.entity.box.y + b.entity.box.h : b.entity.h;
 
       // sort the two sprites based on the lowest coordinates of their bounding box, so those which higher
       // values are drawn after those with lower values, and break ties based on who has the lowest overall
       // y coordinate based on their height
-      let i = (a.y + (a.entity.box.y + a.entity.box.h)) - (b.y + (b.entity.box.y + b.entity.box.h));
+      let i = (a.y + ah) - (b.y + bh);
       return i === 0 ? b.entity.h - a.entity.h : i;
     });
   }

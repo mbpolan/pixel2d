@@ -87,6 +87,11 @@ export class SpriteManager {
    * @returns true if there is at least one collision, false if none.
    */
   public collides(pos: PIXI.Point, sprite: Entity): boolean {
+    // sprites without a bounding box can never collide with another sprite
+    if (!sprite.box) {
+      return false;
+    }
+
     let ab = sprite.box;
     let tx = pos.x * this.tileSize;
     let ty = pos.y * this.tileSize;
@@ -104,7 +109,7 @@ export class SpriteManager {
             let bb = other.entity.box;
 
             // axis-aligned bounding box collision detection
-            return !!(tx < b.x + bb.x + bb.w &&
+            return bb && !!(tx < b.x + bb.x + bb.w &&
             tx + ab.x + ab.w > b.x + bb.x &&
             ty < b.y + bb.y + bb.h &&
             ty + ab.y + ab.h > b.y + bb.y);
