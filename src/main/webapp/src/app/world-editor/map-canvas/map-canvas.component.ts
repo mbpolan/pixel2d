@@ -513,8 +513,12 @@ export class MapCanvasComponent {
    * @param pos The tile coordinates to draw on.
    */
   private placeSprite(pos: PIXI.Point): void {
-    if (this.sprites.collides(pos, this.brush.getSprite())) {
-      console.log('collision!!!!');
+    // prevent drawing the sprite if there is a collision with another sprite, or if the same type of sprite
+    // borders this area
+    if (this.sprites.collides(pos, this.brush.getSprite()) ||
+        this.sprites.hasSpriteUnder(pos.x * TILE_SIZE, pos.y * TILE_SIZE, this.brush.getSprite())) {
+
+      console.log('invalid placement');
       return;
     }
 

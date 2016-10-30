@@ -82,7 +82,7 @@ export class SpriteManager {
   /**
    * Returns a list of sprites that are found under the given canvas coordinates.
    *
-   * @param x The x-coordintae of the canvas.
+   * @param x The x-coordinate of the canvas.
    * @param y The y-coordinate of the canvas.
    * @returns The sprites whose area appears under the point.
    */
@@ -99,6 +99,18 @@ export class SpriteManager {
     });
 
     return matches;
+  }
+
+  /**
+   * Determines if there is a sprite that matches the given entity at the given location.
+   *
+   * @param x The x-coordinate of the canvas.
+   * @param y The y-coordinate of the canvas.
+   * @param entity The sprite to test for.
+   * @returns {boolean} true if a sprite like this already exists, false if not.
+   */
+  public hasSpriteUnder(x: number, y: number, entity: Entity): boolean {
+    return !!this.spritesUnder(x, y).find(s => s.entity.id === entity.id);
   }
 
   /**
