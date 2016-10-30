@@ -333,10 +333,14 @@ export class MapCanvasComponent {
         this.cursor.x = pos.x * scale;
         this.cursor.y = pos.y * scale;
 
-        // update the cursor location if it has changed
-        if (pos.x + 1 !== this.cursorPos.x || pos.y + 1 !== this.cursorPos.y) {
-          this.cursorPos.x = pos.x + 1;
-          this.cursorPos.y = pos.y + 1;
+        // update the cursor location if it has changed, and only if the cursor is stil within
+        // the canvas area
+        let tileX = pos.x + 1;
+        let tileY = pos.y + 1;
+        if ((tileX > 0 && tileY > 0 && tileX <= this.tilesWide && tileY <= this.tilesHigh) &&
+          (tileX !== this.cursorPos.x || tileY !== this.cursorPos.y)) {
+          this.cursorPos.x = tileX;
+          this.cursorPos.y = tileY;
           this.cursorAction.next(this.cursorPos);
         }
       }
